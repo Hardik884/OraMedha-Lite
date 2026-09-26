@@ -16,6 +16,13 @@ const RESEND_AFTER_S = 30;
 type Step = { kind: "phone" } | { kind: "code"; e164: string; national: string };
 
 /**
+ * Forms here are handled in the browser. They still say method="post" and
+ * their inputs have no `name`, so a tap that lands before the page's
+ * JavaScript has loaded (slow hospital Wi-Fi) can never fall back to a GET
+ * that would put the phone number in the address bar and browser history.
+ */
+
+/**
  * Phone-OTP sign-in in two steps: number → code. Everything the PG types is
  * digits, so both fields open the numeric keypad, and the code field accepts
  * the SMS auto-fill that Android and iOS offer.
@@ -95,7 +102,7 @@ export function LoginForm({ next }: { next: string }) {
 
   if (step.kind === "phone") {
     return (
-      <form onSubmit={onSubmitPhone} className="flex flex-1 flex-col" noValidate>
+      <form onSubmit={onSubmitPhone} method="post" className="flex flex-1 flex-col" noValidate>
         <Field label="Mobile number" htmlFor="phone" error={error ?? undefined}>
           <div className="flex gap-2">
             <span
@@ -106,7 +113,6 @@ export function LoginForm({ next }: { next: string }) {
             </span>
             <Input
               id="phone"
-              name="phone"
               type="tel"
               inputMode="numeric"
               autoComplete="tel-national"
@@ -134,6 +140,7 @@ export function LoginForm({ next }: { next: string }) {
 
   return (
     <form
+      method="post"
       onSubmit={(e) => {
         e.preventDefault();
         if (code.length === OTP_LENGTH) void verify(code);
@@ -153,7 +160,6 @@ export function LoginForm({ next }: { next: string }) {
         <Input
           ref={codeRef}
           id="otp"
-          name="otp"
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
