@@ -9,6 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { newId } from "@/lib/ids";
+import { SamePhoneHint } from "@/components/patients/SamePhoneHint";
 import { formatDuration } from "@/lib/scheduling/defaults";
 import {
   validateNewCase,
@@ -201,6 +202,7 @@ export function NewCaseFlow({
                 />
               </div>
             </Field>
+            <SamePhoneHint phone={fields.phone} />
 
             <div className="grid grid-cols-2 gap-3">
               <Field label="Age" htmlFor="age" error={errors.age}>

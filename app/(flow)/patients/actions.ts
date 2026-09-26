@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { parseIndianMobile } from "@/lib/auth/phone";
+import type { SamePhonePatient } from "@/lib/patients/duplicates";
 import { createServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/ids";
 import { istToday } from "@/lib/dates";
@@ -147,4 +149,24 @@ export async function scheduleAppointment(input: {
 
   // Next: offer the "appointment booked" message.
   redirect(bookedPath(input.patientId, input.appointmentId, { isNew: input.isNew }));
+}
+
+/**
+ * Patients of this PG who already have this mobile number (for the gentle
+ * "same person?" hint on New Patient). Row Level Security keeps it to the
+ * signed-in PG's own patients; the number travels in the request body only.
+ */
+export async function findPatientsWithPhone(input: { phone: string }): Promise<SamePhonePatient[]> {
+  const parsed = parseIndianMobile(typeof input.phone === "string" ? input.phone : "");
+  if (!parsed.ok) return [];
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("patient")
+    .select("id, full_name")
+    .eq("phone", parsed.national)
+    .is("deleted_at", null)
+    .order("created_at")
+    .limit(5);
+  if (error) return [];
+  return data.map((p) => ({ id: p.id, fullName: p.full_name }));
 }
