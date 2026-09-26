@@ -8,6 +8,8 @@ export type CurrentPg = {
   fullName: string;
   college: string;
   specialty: { id: string; name: string };
+  /** Finished or skipped the first-run guide. */
+  guideSeen: boolean;
 };
 
 /**
@@ -28,7 +30,7 @@ export const getCurrentPg = cache(
 
     const { data: profile, error } = await supabase
       .from("pg_profile")
-      .select("id, full_name, college, specialty:specialty_id (id, name)")
+      .select("id, full_name, college, guide_seen_at, specialty:specialty_id (id, name)")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -43,6 +45,7 @@ export const getCurrentPg = cache(
         fullName: profile.full_name,
         college: profile.college,
         specialty: profile.specialty,
+        guideSeen: profile.guide_seen_at !== null,
       },
     };
   },

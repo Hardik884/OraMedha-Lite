@@ -7,6 +7,7 @@
 export const LOGIN_PATH = "/login";
 export const ONBOARDING_PATH = "/onboarding";
 export const HOME_PATH = "/today";
+export const WELCOME_PATH = "/welcome";
 
 /** Reachable without signing in. None of these show patient data. */
 const PUBLIC_PATHS = [LOGIN_PATH, "/offline", "/dev/ui"];
