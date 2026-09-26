@@ -80,7 +80,7 @@ export function attentionRow(
         patientName: c.patientName,
         caseId: c.caseId,
         title: c.patientName,
-        detail: `${item.category === "missed" ? "Missed" : "Cancelled"} ${when} · ${c.caseLabel}`,
+        detail: `${item.category === "missed" ? "Missed" : "Cancelled"}${item.last.purpose === "review" ? " review" : ""} ${when} · ${c.caseLabel}`,
         appointmentId: item.last.id,
         visitDate: null,
         message: item.category === "missed" ? msg("missed", appt) : null,

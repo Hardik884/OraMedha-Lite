@@ -45,15 +45,32 @@ describe("attentionRow", () => {
     expect(row.message?.draft).toMatchObject({ kind: "reminder", reminder: "evening" });
   });
 
+  it("a missed review visit says so", () => {
+    const kase = {
+      caseId: "c1",
+      caseStatus: "completed" as const,
+      patientId: "p1",
+      patientName: "Rahul Sharma",
+      patientPhone: "9876543210",
+      caseLabel: "46 · Case type",
+      stageName: null,
+      last: { id: "a1", status: "missed" as const, startsAt: appointment.startsAt, purpose: "review" as const },
+    };
+    expect(attentionRow({ category: "missed", key: "k", kase, last: kase.last }, ctx).detail).toBe(
+      "Missed review 25 Sep · 46 · Case type",
+    );
+  });
+
   it("missed / cancelled: say when; only missed offers 'please call us'", () => {
     const kase = {
       caseId: "c1",
+      caseStatus: "ongoing" as const,
       patientId: "p1",
       patientName: "Rahul Sharma",
       patientPhone: "9876543210",
       caseLabel: "46 · Case type",
       stageName: "Stage B",
-      last: { id: "a1", status: "missed" as const, startsAt: appointment.startsAt },
+      last: { id: "a1", status: "missed" as const, startsAt: appointment.startsAt, purpose: "treatment" as const },
     };
     const missed = attentionRow({ category: "missed", key: "k", kase, last: kase.last }, ctx);
     expect(missed.detail).toBe("Missed 25 Sep · 46 · Case type");

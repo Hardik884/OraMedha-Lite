@@ -32,15 +32,18 @@ export function NextAppointmentCard({
   nowIso: string;
 }) {
   if (!next) {
-    if (kase.status !== "ongoing") return null;
-    if (last && (last.status === "missed" || last.status === "cancelled")) {
+    const lastNeedsNewTime = !!last && (last.status === "missed" || last.status === "cancelled");
+    // A completed case only needs attention when its review visit didn't happen.
+    if (kase.status !== "ongoing" && !(lastNeedsNewTime && kase.lastAppointment?.purpose === "review")) return null;
+    if (last && lastNeedsNewTime) {
       return (
         <Card className="space-y-3 border-danger-border p-4">
           <div className="flex items-center gap-3">
             <CalendarClock className="h-5 w-5 shrink-0 text-danger" aria-hidden />
             <div className="min-w-0 flex-1">
               <p className="text-base font-semibold text-text-primary">
-                {last.status === "missed" ? "Missed" : "Cancelled"} on {formatShortDate(istDateOf(last.startsAt), today)}
+                {last.status === "missed" ? "Missed" : "Cancelled"}
+                {kase.lastAppointment?.purpose === "review" ? " review" : ""} on {formatShortDate(istDateOf(last.startsAt), today)}
               </p>
               <p className="text-sm text-text-secondary">Needs a new appointment</p>
             </div>

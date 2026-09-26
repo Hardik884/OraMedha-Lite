@@ -2,7 +2,7 @@ import "server-only";
 import { buildAttention, type AttentionAppointment, type AttentionCase } from "@/lib/attention/build";
 import { caseLabel } from "@/lib/cases/status";
 import { istToday } from "@/lib/dates";
-import { getCasesNeedingAppointment } from "./cases";
+import { getCasesNeedingAppointment, getCasesWithMissedReview } from "./cases";
 import { getNeverUpdated, messagesFor, type AppointmentListItem, type LoggedMessage, type StatusClock } from "./appointments";
 
 function toAttentionAppointment(a: AppointmentListItem): AttentionAppointment {
@@ -24,9 +24,14 @@ function toAttentionAppointment(a: AppointmentListItem): AttentionAppointment {
  * `comingUp` is passed in because Today already loads it for reminders.
  */
 export async function getAttention(clock: StatusClock, comingUp: AppointmentListItem[]) {
-  const [neverUpdated, cases] = await Promise.all([getNeverUpdated(clock), getCasesNeedingAppointment()]);
-  const casesWithoutNext: AttentionCase[] = cases.map((c) => ({
+  const [neverUpdated, ongoing, reviews] = await Promise.all([
+    getNeverUpdated(clock),
+    getCasesNeedingAppointment(),
+    getCasesWithMissedReview(),
+  ]);
+  const casesWithoutNext: AttentionCase[] = [...ongoing, ...reviews].map((c) => ({
     caseId: c.caseId,
+    caseStatus: c.status === "completed" ? ("completed" as const) : ("ongoing" as const),
     patientId: c.patientId,
     patientName: c.patientName,
     patientPhone: c.patientPhone,

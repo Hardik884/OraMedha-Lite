@@ -19,9 +19,10 @@ function appt(id: string, startsAt: string, over: Partial<AttentionAppointment> 
   };
 }
 
-function kase(id: string, last: AttentionCase["last"]): AttentionCase {
+function kase(id: string, last: AttentionCase["last"], caseStatus: AttentionCase["caseStatus"] = "ongoing"): AttentionCase {
   return {
     caseId: id,
+    caseStatus,
     patientId: `p-${id}`,
     patientName: `Patient ${id}`,
     patientPhone: "9876543210",
@@ -80,9 +81,9 @@ describe("buildAttention", () => {
       pastLive: [],
       upcoming: [],
       casesWithoutNext: [
-        kase("m", { id: "am", status: "missed", startsAt: "2026-09-27T03:30:00Z" }),
-        kase("x", { id: "ax", status: "cancelled", startsAt: "2026-09-30T03:30:00Z" }),
-        kase("n", { id: "an", status: "completed", startsAt: "2026-09-21T03:30:00Z" }),
+        kase("m", { id: "am", status: "missed", startsAt: "2026-09-27T03:30:00Z", purpose: "treatment" }),
+        kase("x", { id: "ax", status: "cancelled", startsAt: "2026-09-30T03:30:00Z", purpose: "treatment" }),
+        kase("n", { id: "an", status: "completed", startsAt: "2026-09-21T03:30:00Z", purpose: "treatment" }),
         kase("z", null),
       ],
       today,
@@ -97,12 +98,32 @@ describe("buildAttention", () => {
     expect(counts).toEqual({ forgotten: 0, unconfirmed: 0, missed: 1, reschedule: 1, no_next: 2, total: 4 });
   });
 
+  it("a completed case shows only when its review visit was missed or cancelled", () => {
+    const review = (status: "missed" | "cancelled" | "completed") =>
+      ({ id: `r-${status}`, status, startsAt: "2026-09-26T03:30:00Z", purpose: "review" as const });
+    const { items } = buildAttention({
+      pastLive: [],
+      upcoming: [],
+      casesWithoutNext: [
+        kase("rm", review("missed"), "completed"),
+        kase("rc", review("cancelled"), "completed"),
+        kase("rd", review("completed"), "completed"),
+        // A treatment visit cancelled when the case was completed: nothing to do.
+        kase("tc", { id: "t", status: "cancelled", startsAt: "2026-09-30T03:30:00Z", purpose: "treatment" }, "completed"),
+        kase("none", null, "completed"),
+      ],
+      today,
+      now,
+    });
+    expect(items.map((i) => i.key)).toEqual(["missed-rm", "reschedule-rc"]);
+  });
+
   it("a case whose last appointment was never updated shows once, as 'Did they come?'", () => {
     const forgotten = appt("a", "2026-09-26T03:30:00Z", { caseId: "c1" });
     const { items } = buildAttention({
       pastLive: [forgotten],
       upcoming: [],
-      casesWithoutNext: [kase("c1", { id: "a", status: "scheduled", startsAt: forgotten.startsAt })],
+      casesWithoutNext: [kase("c1", { id: "a", status: "scheduled", startsAt: forgotten.startsAt, purpose: "treatment" })],
       today,
       now,
     });

@@ -36,7 +36,7 @@ export type CaseSummary = {
     purpose: "treatment" | "review";
   } | null;
   /** The case's most recent appointment, whatever happened to it. */
-  lastAppointment: { id: string; startsAt: string; status: AppointmentStatus } | null;
+  lastAppointment: { id: string; startsAt: string; status: AppointmentStatus; purpose: "treatment" | "review" } | null;
 };
 
 /** View columns are typed nullable; these ones never are for a real row. */
@@ -84,6 +84,7 @@ export function toCaseSummary(row: CaseOverviewRow): CaseSummary {
             id: row.last_appointment_id,
             startsAt: row.last_appointment_at,
             status: toAppointmentStatus(row.last_appointment_status),
+            purpose: row.last_appointment_purpose === "review" ? ("review" as const) : ("treatment" as const),
           }
         : null,
   };
@@ -100,6 +101,21 @@ export async function getCasesNeedingAppointment(): Promise<CaseSummary[]> {
     .order("created_at", { ascending: false })
     .limit(100);
   if (error) throw new Error(`Could not load pending cases: ${error.code}`);
+  return data.map(toCaseSummary);
+}
+
+/** Completed cases whose review visit was missed or cancelled, with nothing booked since. */
+export async function getCasesWithMissedReview(): Promise<CaseSummary[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("case_overview")
+    .select("*")
+    .eq("status", "completed")
+    .is("next_appointment_id", null)
+    .eq("last_appointment_purpose", "review")
+    .in("last_appointment_status", ["missed", "cancelled"])
+    .limit(100);
+  if (error) throw new Error(`Could not load review visits: ${error.code}`);
   return data.map(toCaseSummary);
 }
 

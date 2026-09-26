@@ -12,6 +12,9 @@ import { canRecordVisitOn } from "@/lib/visits/backdate";
  *   reschedule  — the case's last appointment was cancelled, nothing booked since
  *   no_next     — an ongoing case with no next appointment
  *
+ * A completed case appears only when its review visit was missed or
+ * cancelled (as missed / reschedule); it never "needs a next appointment".
+ *
  * A case appears once: one waiting for "Did they come?" isn't also listed as
  * having no next appointment.
  */
@@ -32,13 +35,14 @@ export type AttentionAppointment = {
 
 export type AttentionCase = {
   caseId: string;
+  caseStatus: "ongoing" | "completed";
   patientId: string;
   patientName: string;
   patientPhone: string;
   caseLabel: string;
   stageName: string | null;
   /** The case's most recent appointment, whatever its status. */
-  last: { id: string; status: AppointmentStatus; startsAt: string } | null;
+  last: { id: string; status: AppointmentStatus; startsAt: string; purpose: "treatment" | "review" } | null;
 };
 
 export type AttentionItem =
@@ -80,6 +84,11 @@ export function buildAttention(input: {
 
   const byCase: AttentionItem[] = input.casesWithoutNext
     .filter((c) => !waitingCases.has(c.caseId))
+    .filter(
+      (c) =>
+        c.caseStatus === "ongoing" ||
+        (c.last?.purpose === "review" && (c.last.status === "missed" || c.last.status === "cancelled")),
+    )
     .map((c): AttentionItem => {
       if (c.last?.status === "missed") return { category: "missed", key: `missed-${c.caseId}`, kase: c, last: c.last };
       if (c.last?.status === "cancelled") {
