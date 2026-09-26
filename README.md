@@ -51,9 +51,12 @@ Needs Docker Desktop. Used to try migrations and run the Row Level Security test
 ```bash
 npm run db:start     # local Supabase on ports 543xx
 npm run db:reset     # re-apply all migrations to the LOCAL database
-npm run test:db      # two-PG RLS isolation tests (refuses to run against anything but localhost)
+npm run test:db      # database tests with throwaway users
+npm run dev:local    # the app on http://localhost:3100, wired to the LOCAL database
 npm run db:stop
 ```
+
+**Local-only guard.** `test:db` and `dev:local` refuse to start unless the Supabase URL is localhost, and `dev:local` also makes every Supabase client in the app refuse a non-local URL — so test data can never be written to the hosted project. `dev:local` builds into `.next-local` so it never reuses a bundle compiled for the hosted project. Use plain `npm run dev` / `npm run dev:phone` for the hosted project.
 
 Local phone login: `98765 43210`, code `123456` (see `supabase/config.toml`; no SMS is sent).
 

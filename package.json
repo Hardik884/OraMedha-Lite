@@ -2,6 +2,7 @@
   "name": "oramedha-lite",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "dev:phone": "next dev -H 0.0.0.0",
@@ -22,7 +23,8 @@
     "gen:types": "supabase gen types typescript --linked --schema public > types/database.types.ts",
     "test:db": "node scripts/test-db.mjs",
     "gen:types:local": "supabase gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres --schema public > types/database.types.ts",
-    "db:push:dry": "supabase db push --linked --dry-run"
+    "db:push:dry": "supabase db push --linked --dry-run",
+    "dev:local": "node scripts/dev-local.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",

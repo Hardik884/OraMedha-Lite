@@ -11,6 +11,8 @@ export default defineConfig({
   },
   test: {
     include: ["test/db/**/*.spec.ts"],
+    // Refuses a non-local Supabase URL before any spec runs.
+    setupFiles: ["./test/db/guard.ts"],
     environment: "node",
     fileParallelism: false,
     testTimeout: 20000,
