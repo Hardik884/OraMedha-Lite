@@ -9,31 +9,10 @@
  *  - soft-delete tables cannot be hard-deleted
  *  - a stage from a different case type is refused
  */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { randomUUID } from "node:crypto";
+import { createClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/types/database.types";
-
-const URL = process.env.TEST_SUPABASE_URL!;
-const ANON = process.env.TEST_SUPABASE_ANON_KEY!;
-const SERVICE = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY!;
-
-type Client = SupabaseClient<Database>;
-
-const noSession = { auth: { persistSession: false, autoRefreshToken: false } };
-
-async function signedInPg(label: string): Promise<{ client: Client; id: string }> {
-  const admin = createClient<Database>(URL, SERVICE, noSession);
-  const email = `rls-${label}-${randomUUID()}@test.local`;
-  const password = `pw-${randomUUID()}`;
-  const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
-  if (error || !data.user) throw error ?? new Error("createUser failed");
-
-  const client = createClient<Database>(URL, ANON, noSession);
-  const signIn = await client.auth.signInWithPassword({ email, password });
-  if (signIn.error) throw signIn.error;
-  return { client, id: data.user.id };
-}
+import { ANON, URL, noSession, signedInUser as signedInPg, type Client } from "./helpers";
 
 /** The first stage of two case types from different specialties. */
 async function templateIds(client: Client) {
