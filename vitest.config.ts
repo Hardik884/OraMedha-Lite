@@ -10,6 +10,8 @@ export default defineConfig({
   },
   test: {
     include: ["lib/**/*.spec.ts", "components/**/*.spec.ts", "test/**/*.spec.ts"],
+    // Database specs need the local Supabase stack: `npm run test:db`.
+    exclude: ["test/db/**", "node_modules/**"],
     environment: "node",
   },
 });
