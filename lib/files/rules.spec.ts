@@ -30,6 +30,12 @@ describe("resolveMime", () => {
     expect(resolveMime("a.jpg", "image/jpg")).toBe("image/jpeg");
   });
 
+  it("isn't fooled by names every object has", () => {
+    expect(resolveMime("x", "toString")).toBeNull();
+    expect(resolveMime("x.constructor", "")).toBeNull();
+    expect(isImageMime("constructor")).toBe(false);
+  });
+
   it("refuses types that are not on the list", () => {
     expect(resolveMime("archive.zip", "application/zip")).toBeNull();
     expect(resolveMime("clip.mp4", "video/mp4")).toBeNull();

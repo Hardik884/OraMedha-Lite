@@ -44,3 +44,10 @@ describe("TRANSITIONS", () => {
     expect(TRANSITIONS.completed).toEqual(["scheduled", "confirmed", "unconfirmed"]);
   });
 });
+
+describe("TRANSITIONS keys", () => {
+  it("has only the four status changes as its own keys", () => {
+    expect(Object.keys(TRANSITIONS).sort()).toEqual(["cancelled", "completed", "confirmed", "missed"]);
+    expect(Object.hasOwn(TRANSITIONS, "toString")).toBe(false);
+  });
+});

@@ -60,7 +60,7 @@ export const ACCEPT_DOCUMENTS = [
 export const ALLOWED_DESCRIPTION = "photos (JPG, PNG, HEIC) and documents (PDF, PowerPoint, Word)";
 
 export function isImageMime(mime: string): boolean {
-  return mime in IMAGE_TYPES;
+  return Object.hasOwn(IMAGE_TYPES, mime);
 }
 
 export function extensionFor(mime: string): string {
@@ -79,7 +79,7 @@ function extensionOf(name: string): string {
  */
 export function resolveMime(name: string, reported: string): string | null {
   const type = reported === "image/jpg" ? "image/jpeg" : reported.toLowerCase();
-  if (type in ALL_TYPES) return type;
+  if (Object.hasOwn(ALL_TYPES, type)) return type;
   const ext = extensionOf(name);
   if (!ext) return null;
   for (const [mime, exts] of Object.entries(ALL_TYPES)) {

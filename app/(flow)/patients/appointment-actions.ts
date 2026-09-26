@@ -52,7 +52,8 @@ export async function setAppointmentStatus(input: {
   appointmentId: string;
   to: StatusChange;
 }): Promise<AppointmentActionResult> {
-  if (!isUuid(input.appointmentId) || !(input.to in TRANSITIONS)) return { ok: false, error: FAILED };
+  // Own keys only: `in` would also accept inherited names such as "toString".
+  if (!isUuid(input.appointmentId) || !Object.hasOwn(TRANSITIONS, input.to)) return { ok: false, error: FAILED };
   const supabase = await createServerClient();
   const now = new Date().toISOString();
 
