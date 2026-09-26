@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerClient } from "@/lib/supabase/server";
 import { istDayRange, istToday } from "@/lib/dates";
-import { parseWorkingHours, type WorkingHours } from "@/lib/scheduling/defaults";
+import type { LastUpdatedVisit } from "@/lib/scheduling/window";
 import { getCase, type CaseSummary } from "@/lib/data/cases";
 import type {
   CaseTypeTemplate,
@@ -13,7 +13,8 @@ import type {
 /**
  * Everything Update Visit needs for one case, loaded on the server and handed
  * to the (pure) engine on the phone: the case type's template, the PG's
- * overrides, clinic timings, and today's visit if there already is one.
+ * overrides, and today's visit if there already is one. (Clinic timings and
+ * appointments for the slot finder come from lib/data/scheduling.)
  */
 export type TodayVisit = {
   id: string;
@@ -32,10 +33,11 @@ export type VisitContext = {
   kase: CaseSummary;
   template: CaseTypeTemplate;
   overrides: { stages: PgStageOverride[]; modifiers: PgModifierOverride[] };
-  workingHours: WorkingHours;
   todayVisit: TodayVisit | null;
   /** A live appointment for this case today (not yet linked to a visit). */
   todaysAppointment: { id: string; startsAt: string } | null;
+  /** The case's next live appointment on a LATER day — Next Step moves it rather than adding another. */
+  upcomingAppointment: { id: string; startsAt: string } | null;
   today: string;
 };
 
@@ -47,7 +49,7 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
   const today = istToday();
   const { start, end } = istDayRange(today);
 
-  const [stages, modifiers, stageOv, modOv, prefs, visit, todayAppts] = await Promise.all([
+  const [stages, modifiers, stageOv, modOv, visit, todayAppts, upcoming] = await Promise.all([
     supabase
       .from("stage")
       .select(
@@ -64,7 +66,6 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
       .from("pg_stage_override")
       .select("stage_id, duration_min, gap_min_days, gap_max_days, partial_gap_min_days, partial_gap_max_days"),
     supabase.from("pg_modifier_override").select("modifier_id, duration_min, gap_min_days, gap_max_days"),
-    supabase.from("pg_preferences").select("working_hours").maybeSingle(),
     supabase
       .from("visit")
       .select(
@@ -87,9 +88,18 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
       .lt("starts_at", end)
       .order("starts_at")
       .limit(1),
+    supabase
+      .from("appointment")
+      .select("id, starts_at")
+      .eq("case_id", caseId)
+      .is("deleted_at", null)
+      .in("status", ["scheduled", "confirmed", "unconfirmed"])
+      .gte("starts_at", end)
+      .order("starts_at")
+      .limit(1),
   ]);
 
-  for (const r of [stages, modifiers, stageOv, modOv, prefs, visit, todayAppts]) {
+  for (const r of [stages, modifiers, stageOv, modOv, visit, todayAppts, upcoming]) {
     if (r.error) throw new Error(`Could not load visit context: ${r.error.code}`);
   }
 
@@ -148,7 +158,6 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
         gapMaxDays: o.gap_max_days,
       })),
     },
-    workingHours: parseWorkingHours(prefs.data?.working_hours ?? null),
     todayVisit: v
       ? {
           id: v.id,
@@ -173,6 +182,33 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
     todaysAppointment: todayAppts.data![0]
       ? { id: todayAppts.data![0].id, startsAt: todayAppts.data![0].starts_at }
       : null,
+    upcomingAppointment: upcoming.data![0] ? { id: upcoming.data![0].id, startsAt: upcoming.data![0].starts_at } : null,
     today,
+  };
+}
+
+/**
+ * The most recent visit of a case that has been UPDATED (has an outcome), for
+ * working out when the next visit is due (lib/scheduling/window).
+ */
+export async function getLastUpdatedVisit(caseId: string): Promise<LastUpdatedVisit | null> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("visit")
+    .select("visit_date, outcome, other_work, modifier_id, visit_stage!visit_stage_visit_same_pg (stage_id)")
+    .eq("case_id", caseId)
+    .is("deleted_at", null)
+    .not("outcome", "is", null)
+    .order("visit_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`Could not load last visit: ${error.code}`);
+  if (!data || (data.outcome !== "partial" && data.outcome !== "complete")) return null;
+  return {
+    visitDate: data.visit_date,
+    outcome: data.outcome,
+    otherWork: data.other_work,
+    modifierId: data.modifier_id,
+    stageIds: data.visit_stage.map((vs) => vs.stage_id),
   };
 }

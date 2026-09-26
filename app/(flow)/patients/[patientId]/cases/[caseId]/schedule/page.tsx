@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScheduleForm } from "@/components/appointments/ScheduleForm";
-import { getCase } from "@/lib/data/cases";
-import { getStageDefaults } from "@/lib/data/templates";
-import { getWorkingHours } from "@/lib/data/preferences";
+import { getLastUpdatedVisit, getVisitContext } from "@/lib/data/visit";
+import { getSchedulingData } from "@/lib/data/scheduling";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
-import { istToday } from "@/lib/dates";
-import { defaultNextVisit } from "@/lib/scheduling/defaults";
+import { formatRelativeDay } from "@/lib/dates";
+import { effectiveStageDuration } from "@/lib/engine/next-step";
+import { windowForCase } from "@/lib/scheduling/window";
 
 export const metadata: Metadata = { title: "Schedule" };
 
 /** Default when a case has no current stage to take a duration from. */
 const FALLBACK_DURATION_MIN = 30;
 
+/**
+ * "Schedule the next appointment" — step 3 of New Patient, and Schedule from
+ * Pending or the Patient screen. The slot finder suggests the first free slot
+ * in the case's usual window.
+ */
 export default async function SchedulePage({
   params,
   searchParams,
@@ -26,20 +31,26 @@ export default async function SchedulePage({
   const { new: isNew } = await searchParams;
   if (!isUuid(patientId) || !isUuid(caseId)) notFound();
 
-  const kase = await getCase(caseId);
-  if (!kase || kase.patientId !== patientId) notFound();
-
-  const [stage, workingHours] = await Promise.all([
-    kase.currentStageId ? getStageDefaults(kase.currentStageId) : Promise.resolve(null),
-    getWorkingHours(),
+  const [ctx, scheduling, lastVisit] = await Promise.all([
+    getVisitContext(caseId),
+    getSchedulingData(),
+    getLastUpdatedVisit(caseId),
   ]);
+  if (!ctx || ctx.kase.patientId !== patientId) notFound();
+  const { kase, template, overrides, today } = ctx;
 
-  const today = istToday();
-  const suggested = defaultNextVisit({
+  const window = windowForCase({
+    template,
+    overrides,
+    lastVisit: kase.status === "ongoing" ? lastVisit : null,
+    currentStageId: kase.status === "ongoing" ? kase.currentStageId : null,
     today,
-    gapMinDays: stage?.gapMinDays ?? null,
-    workingHours,
   });
+  const stage = template.stages.find((s) => s.id === kase.currentStageId);
+  const durationMin =
+    stage && kase.status === "ongoing"
+      ? effectiveStageDuration(stage, overrides.stages).durationMin
+      : FALLBACK_DURATION_MIN;
 
   return (
     <ScheduleForm
@@ -48,13 +59,17 @@ export default async function SchedulePage({
       patientName={kase.patientName}
       caseTypeName={kase.caseTypeName}
       tooth={kase.tooth}
-      stageName={kase.currentStageName}
+      stageName={kase.status === "ongoing" ? kase.currentStageName : "Review visit"}
       today={today}
-      defaults={{
-        date: suggested.date,
-        time: suggested.time,
-        durationMin: stage?.durationMin ?? FALLBACK_DURATION_MIN,
-      }}
+      nowIso={new Date().toISOString()}
+      scheduling={scheduling}
+      window={{ from: window.from, to: window.to }}
+      windowLabel={
+        window.usual
+          ? `Usual window: ${formatRelativeDay(window.from, today)} – ${formatRelativeDay(window.to, today)}`
+          : undefined
+      }
+      defaultDurationMin={durationMin}
       existingNextAt={kase.nextAppointment?.startsAt ?? null}
       isNew={isNew === "1"}
     />

@@ -59,28 +59,3 @@ export async function getCaseTypesForSpecialty(specialtyId: string): Promise<Cas
       }),
   }));
 }
-
-/** One stage's effective duration and minimum gap for this PG. */
-export async function getStageDefaults(
-  stageId: string,
-): Promise<{ durationMin: number; gapMinDays: number | null } | null> {
-  const supabase = await createServerClient();
-  const [stage, override] = await Promise.all([
-    supabase
-      .from("stage")
-      .select("default_duration_min, default_gap_min_days")
-      .eq("id", stageId)
-      .maybeSingle(),
-    supabase
-      .from("pg_stage_override")
-      .select("duration_min, gap_min_days")
-      .eq("stage_id", stageId)
-      .maybeSingle(),
-  ]);
-  if (stage.error) throw new Error(`Could not load stage: ${stage.error.code}`);
-  if (!stage.data) return null;
-  return {
-    durationMin: override.data?.duration_min ?? stage.data.default_duration_min,
-    gapMinDays: override.data?.gap_min_days ?? stage.data.default_gap_min_days,
-  };
-}

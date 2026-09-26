@@ -3,17 +3,16 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { CalendarCheck, Info } from "lucide-react";
+import { SlotPicker, useSlotChoice } from "@/components/appointments/SlotPicker";
+import type { SchedulingData } from "@/lib/data/scheduling-query";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ChipSelect } from "@/components/ui/chip-select";
-import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { newId } from "@/lib/ids";
 import { caseLabel } from "@/lib/cases/status";
-import { formatAppointmentWhen, isIsoDate, istToInstant, isTime } from "@/lib/dates";
+import { formatAppointmentWhen } from "@/lib/dates";
 import { durationOptions, formatDuration } from "@/lib/scheduling/defaults";
 import { patientPath } from "@/lib/navigation/paths";
 import { scheduleAppointment, type ActionResult } from "@/app/(flow)/patients/actions";
@@ -21,9 +20,9 @@ import { scheduleAppointment, type ActionResult } from "@/app/(flow)/patients/ac
 type Errors = NonNullable<ActionResult<"date" | "time" | "durationMin">["errors"]>;
 
 /**
- * "Schedule the next appointment" — manual for now (the slot finder arrives in
- * Slice 5). Date and time use the phone's own pickers; duration is one tap,
- * pre-set to how long this stage usually takes for this PG.
+ * "Schedule the next appointment": the slot finder suggests the first free
+ * slot in the usual window (Edit to choose another or pick by hand); duration
+ * is one tap, pre-set to how long this stage usually takes for this PG.
  */
 export function ScheduleForm({
   patientId,
@@ -33,7 +32,11 @@ export function ScheduleForm({
   tooth,
   stageName,
   today,
-  defaults,
+  nowIso,
+  scheduling,
+  window,
+  windowLabel,
+  defaultDurationMin,
   existingNextAt,
   isNew,
 }: {
@@ -44,20 +47,22 @@ export function ScheduleForm({
   tooth: string | null;
   stageName: string | null;
   today: string;
-  defaults: { date: string; time: string; durationMin: number };
+  nowIso: string;
+  scheduling: SchedulingData;
+  window: { from: string; to: string };
+  windowLabel?: string;
+  defaultDurationMin: number;
   existingNextAt: string | null;
   isNew: boolean;
 }) {
-  const [date, setDate] = useState(defaults.date);
-  const [time, setTime] = useState(defaults.time);
-  const [durationMin, setDurationMin] = useState(defaults.durationMin);
+  const [durationMin, setDurationMin] = useState(defaultDurationMin);
+  const slot = useSlotChoice({ scheduling, window, durationMin, nowIso });
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const appointmentId = useRef<string | null>(null);
 
   const patientHref = patientPath(patientId, { caseId });
-  const preview = isIsoDate(date) && isTime(time) ? formatAppointmentWhen(istToInstant(date, time), today) : null;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -68,7 +73,14 @@ export function ScheduleForm({
     startTransition(async () => {
       let result: ActionResult<"date" | "time" | "durationMin"> | undefined;
       try {
-        result = await scheduleAppointment({ appointmentId: id, patientId, caseId, date, time, durationMin });
+        result = await scheduleAppointment({
+          appointmentId: id,
+          patientId,
+          caseId,
+          date: slot.value?.date ?? "",
+          time: slot.value?.time ?? "",
+          durationMin,
+        });
       } catch {
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
@@ -103,34 +115,13 @@ export function ScheduleForm({
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Date" htmlFor="date" error={errors.date}>
-            <Input
-              id="date"
-              type="date"
-              min={today}
-              value={date}
-              onChange={(e) => {
-                setDate(e.target.value);
-                setErrors((x) => ({ ...x, date: undefined, time: undefined }));
-              }}
-              hasError={Boolean(errors.date)}
-            />
-          </Field>
-          <Field label="Time" htmlFor="time" error={errors.time}>
-            <Input
-              id="time"
-              type="time"
-              step={300}
-              value={time}
-              onChange={(e) => {
-                setTime(e.target.value);
-                setErrors((x) => ({ ...x, time: undefined }));
-              }}
-              hasError={Boolean(errors.time)}
-            />
-          </Field>
-        </div>
+        <SlotPicker
+          choice={slot}
+          today={today}
+          durationMin={durationMin}
+          windowLabel={windowLabel}
+          error={errors.date ?? errors.time}
+        />
 
         <div className="space-y-2">
           <Label>Duration</Label>
@@ -141,10 +132,10 @@ export function ScheduleForm({
               setDurationMin(v);
               setErrors((x) => ({ ...x, durationMin: undefined }));
             }}
-            options={durationOptions(defaults.durationMin).map((m) => ({
+            options={durationOptions(defaultDurationMin).map((m) => ({
               value: m,
               label: formatDuration(m),
-              hint: m === defaults.durationMin ? "usual" : undefined,
+              hint: m === defaultDurationMin ? "usual" : undefined,
             }))}
           />
           {errors.durationMin && (
@@ -153,16 +144,6 @@ export function ScheduleForm({
             </p>
           )}
         </div>
-
-        {preview && (
-          <Card className="flex items-center gap-3 p-4">
-            <CalendarCheck className="h-5 w-5 shrink-0 text-accent" aria-hidden />
-            <div>
-              <p className="text-base font-semibold text-text-primary">{preview}</p>
-              <p className="text-sm text-text-secondary">{formatDuration(durationMin)}</p>
-            </div>
-          </Card>
-        )}
 
         {formError && (
           <p className="rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-3 text-sm text-danger" role="alert">

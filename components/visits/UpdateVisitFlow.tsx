@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, useTransition } from "react";
-import { ArrowRight, CalendarClock, CircleCheck, Info, Pencil } from "lucide-react";
+import { AlertTriangle, ArrowRight, CircleCheck, Info, Pencil } from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,12 @@ import { MultiChoiceList } from "@/components/ui/multi-choice-list";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { newId } from "@/lib/ids";
-import { addDays, formatAppointmentWhen, formatRelativeDay, isIsoDate, istToInstant, isTime } from "@/lib/dates";
-import { defaultNextVisit, durationOptions, formatDuration, type WorkingHours } from "@/lib/scheduling/defaults";
+import { formatAppointmentWhen, formatRelativeDay, isIsoDate, isTime } from "@/lib/dates";
+import { defaultNextVisit, durationOptions, formatDuration } from "@/lib/scheduling/defaults";
+import { windowFromGap } from "@/lib/scheduling/window";
+import { checkSlot, describeProblem } from "@/lib/scheduling/slot-finder";
+import { SlotPicker, useSlotChoice } from "@/components/appointments/SlotPicker";
+import type { SchedulingData } from "@/lib/data/scheduling-query";
 import { describeGap } from "@/lib/settings/overrides";
 import {
   applicableModifiers,
@@ -68,11 +72,13 @@ export function UpdateVisitFlow({
   subtitle,
   template,
   overrides,
-  workingHours,
+  scheduling,
+  nowIso,
   today,
   currentStageId,
   todayVisit,
   todaysAppointmentAt,
+  upcomingAppointment,
   backHref,
 }: {
   patientId: string;
@@ -81,11 +87,15 @@ export function UpdateVisitFlow({
   subtitle: string;
   template: CaseTypeTemplate;
   overrides: { stages: PgStageOverride[]; modifiers: PgModifierOverride[] };
-  workingHours: WorkingHours;
+  /** Clinic timings, blocked times and this PG's appointments, for the slot finder. */
+  scheduling: SchedulingData;
+  /** "Now" as loaded on the server, so server and phone render the same slot. */
+  nowIso: string;
   today: string;
   currentStageId: string | null;
   todayVisit: TodayVisit | null;
   todaysAppointmentAt: string | null;
+  upcomingAppointment: { id: string; startsAt: string } | null;
   backHref: string;
 }) {
   const isEdit = todayVisit?.outcome != null;
@@ -115,6 +125,7 @@ export function UpdateVisitFlow({
   const [choice, setChoice] = useState<Choice>(null);
   const [durationMin, setDurationMin] = useState(30);
   const [durationSource, setDurationSource] = useState<{ source: ValueSource; stageName: string } | null>(null);
+  // Only the optional review visit is picked by hand; next visits use the slot finder.
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [review, setReview] = useState(false);
@@ -127,6 +138,26 @@ export function UpdateVisitFlow({
   const ids = useRef<{ visitId: string; appointmentId: string } | null>(null);
 
   const stageById = useMemo(() => new Map(template.stages.map((s) => [s.id, s])), [template]);
+
+  // ── Slot finder ────────────────────────────────────────────────────────────
+  // The window runs from today by the engine's gap. When editing, the
+  // appointment this visit booked earlier is the one being moved, so it must
+  // not count as a clash with itself.
+  const booked = todayVisit?.nextAppointment;
+  const bookedLive =
+    !!booked && ["scheduled", "confirmed", "unconfirmed"].includes(booked.status) && new Date(booked.startsAt) > new Date(nowIso);
+  // The appointment Confirm & schedule will MOVE (not add to): the one this
+  // visit booked, else the case's own upcoming one (see record_visit).
+  const moving = bookedLive ? { id: booked!.id, startsAt: booked!.startsAt, ownBooking: true } : upcomingAppointment ? { ...upcomingAppointment, ownBooking: false } : null;
+  const engineGap = suggestion?.kind === "next_visit" ? suggestion.gap : null;
+  const searchWindow = windowFromGap(today, engineGap, today);
+  const slot = useSlotChoice({
+    scheduling,
+    window: searchWindow,
+    durationMin,
+    nowIso,
+    excludeAppointmentIds: moving ? [moving.id] : [],
+  });
 
   function goToNext(event: React.FormEvent) {
     event.preventDefault();
@@ -156,9 +187,7 @@ export function UpdateVisitFlow({
     } else {
       setChoice(null);
       setDurationSource(null);
-      const d = defaultNextVisit({ today, gapMinDays: null, workingHours });
-      setDate(d.date);
-      setTime(d.time);
+      slot.backToSuggestion();
     }
     setStep("next");
     window.scrollTo({ top: 0 });
@@ -175,14 +204,12 @@ export function UpdateVisitFlow({
         : effectiveStageDuration(stage, overrides.stages);
       setDurationMin(eff.durationMin);
       setDurationSource({ source: eff.source, stageName: stage.name });
-      const gap = s?.kind === "next_visit" ? s.gap : null;
-      const d = defaultNextVisit({ today, gapMinDays: gap?.minDays ?? null, workingHours });
-      setDate(d.date);
-      setTime(d.time);
+      // A different next step → follow the finder's suggestion again.
+      slot.backToSuggestion();
     } else if (next?.kind === "complete") {
       setReview(false);
       setDate("");
-      setTime(defaultNextVisit({ today, gapMinDays: null, workingHours }).time);
+      setTime(defaultNextVisit({ today, gapMinDays: null, workingHours: scheduling.workingHours }).time);
       setDurationMin(30);
     }
   }
@@ -207,7 +234,14 @@ export function UpdateVisitFlow({
           modifierId: activeModifier || null,
           next:
             choice.kind === "stage"
-              ? { kind: "stage", stageId: choice.stageId, schedule, date, time, durationMin }
+              ? {
+                  kind: "stage",
+                  stageId: choice.stageId,
+                  schedule,
+                  date: slot.value?.date ?? "",
+                  time: slot.value?.time ?? "",
+                  durationMin,
+                }
               : { kind: "complete", review, date, time, durationMin },
         });
       } catch {
@@ -353,14 +387,14 @@ export function UpdateVisitFlow({
   // Step 2 — Next step
   // ════════════════════════════════════════════════════════════════════════
   const chosenStage = choice?.kind === "stage" ? stageById.get(choice.stageId) : undefined;
-  const gap = suggestion?.kind === "next_visit" && choice?.kind === "stage" ? suggestion.gap : null;
-  const windowFrom = gap ? addDays(today, gap.minDays) : null;
-  const windowTo = gap ? addDays(today, gap.maxDays) : null;
-  const outsideWindow = !!(windowFrom && windowTo && isIsoDate(date) && (date < windowFrom || date > windowTo));
-  const preview = isIsoDate(date) && isTime(time) ? formatAppointmentWhen(istToInstant(date, time), today) : null;
-  const booked = todayVisit?.nextAppointment;
-  const bookedLive =
-    booked && ["scheduled", "confirmed", "unconfirmed"].includes(booked.status) && new Date(booked.startsAt) > new Date();
+  const windowLabel =
+    searchWindow.usual && engineGap
+      ? `Usual window: ${formatRelativeDay(searchWindow.from, today)} – ${formatRelativeDay(searchWindow.to, today)} (${describeGap(engineGap.minDays, engineGap.maxDays)})`
+      : undefined;
+  const reviewProblems =
+    review && isIsoDate(date) && isTime(time)
+      ? checkSlot(slot.input, date, time, durationMin).map((p) => describeProblem(p, today))
+      : [];
   const isChoiceSuggested =
     (suggestion?.kind === "next_visit" && choice?.kind === "stage" && choice.stageId === suggestion.nextStage.id) ||
     (suggestion?.kind === "case_complete" && choice?.kind === "complete");
@@ -422,46 +456,13 @@ export function UpdateVisitFlow({
         {/* Next visit: appointment + duration */}
         {choice?.kind === "stage" && (
           <>
-            <section className="space-y-2.5">
-              <h2 className="text-base font-semibold text-text-primary">Next appointment</h2>
-              {windowFrom && windowTo && (
-                <p className="text-sm text-text-secondary">
-                  Usual window: {formatRelativeDay(windowFrom, today)} – {formatRelativeDay(windowTo, today)} (
-                  {describeGap(gap!.minDays, gap!.maxDays)})
-                </p>
-              )}
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Date" htmlFor="next-date" error={nextErrors?.date}>
-                  <Input
-                    id="next-date"
-                    type="date"
-                    min={today}
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    hasError={Boolean(nextErrors?.date)}
-                  />
-                </Field>
-                <Field label="Time" htmlFor="next-time" error={nextErrors?.time}>
-                  <Input
-                    id="next-time"
-                    type="time"
-                    step={300}
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    hasError={Boolean(nextErrors?.time)}
-                  />
-                </Field>
-              </div>
-              {outsideWindow && (
-                <p className="text-sm text-warning">That&apos;s outside the usual window — fine if you meant it.</p>
-              )}
-              {preview && (
-                <p className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                  <CalendarClock className="h-5 w-5 text-accent" aria-hidden />
-                  {preview}
-                </p>
-              )}
-            </section>
+            <SlotPicker
+              choice={slot}
+              today={today}
+              durationMin={durationMin}
+              windowLabel={windowLabel}
+              error={nextErrors?.date ?? nextErrors?.time}
+            />
 
             <section className="space-y-2.5">
               <Label>Expected duration</Label>
@@ -523,20 +524,37 @@ export function UpdateVisitFlow({
                     onChange={setDurationMin}
                     options={REVIEW_DURATIONS.map((m) => ({ value: m, label: formatDuration(m) }))}
                   />
+                  {reviewProblems.length > 0 && (
+                    <div className="rounded-[10px] border border-warning-border bg-warning-bg px-3.5 py-3 text-sm text-warning" role="status">
+                      <p className="flex items-center gap-2 font-medium">
+                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                        You can still book this, but:
+                      </p>
+                      <ul className="mt-1 list-disc space-y-0.5 pl-9">
+                        {reviewProblems.map((p) => (
+                          <li key={p}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>
           </section>
         )}
 
-        {isEdit && bookedLive && (
+        {moving && choice && (
           <p className="flex gap-2 rounded-[10px] border border-info-border bg-info-bg px-3.5 py-3 text-sm text-info">
             <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             <span>
-              This visit already booked {formatAppointmentWhen(booked!.startsAt, today)}.{" "}
-              {choice?.kind === "complete"
-                ? "Saving moves it to the review time, or cancels it if no review is booked."
-                : "Confirm & schedule moves it; schedule later cancels it."}
+              Already booked: {formatAppointmentWhen(moving.startsAt, today)}.{" "}
+              {choice.kind === "complete"
+                ? moving.ownBooking
+                  ? "Saving moves it to the review time, or cancels it if no review is booked."
+                  : "Completing the case cancels it."
+                : moving.ownBooking
+                  ? "Confirm & schedule moves it; schedule later cancels it."
+                  : "Confirm & schedule moves it to the new time; schedule later keeps it."}
             </span>
           </p>
         )}
