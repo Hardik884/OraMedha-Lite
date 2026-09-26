@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppBar } from "@/components/layout/AppBar";
 import { BottomNav } from "@/components/layout/BottomNav";
-import { PgMenu } from "@/components/layout/PgMenu";
+import { PgAvatarLink } from "@/components/layout/PgAvatarLink";
 import { getCurrentPg } from "@/lib/pg/current";
 import { LOGIN_PATH, ONBOARDING_PATH } from "@/lib/auth/routes";
 
@@ -22,16 +22,7 @@ export default async function TabsLayout({ children }: { children: React.ReactNo
   return (
     <div className="min-h-dvh bg-background">
       <AppBar
-        right={
-          <PgMenu
-            pg={{
-              fullName: pg.fullName,
-              college: pg.college,
-              specialtyName: pg.specialty.name,
-              phone: pg.phone,
-            }}
-          />
-        }
+        right={<PgAvatarLink fullName={pg.fullName} />}
       />
       <main className="mx-auto w-full max-w-lg px-4 pb-nav">{children}</main>
       <BottomNav />

@@ -16,6 +16,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Dialog } from "@/components/ui/dialog";
 import { ChoiceList } from "@/components/ui/choice-list";
 import { ChipSelect } from "@/components/ui/chip-select";
+import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { OraMedhaLogo } from "@/components/shared/OraMedhaLogo";
 import { PatientAvatar } from "@/components/shared/PatientAvatar";
@@ -68,6 +69,7 @@ export function Gallery() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [duration, setDuration] = useState("60");
   const [minutes, setMinutes] = useState(45);
+  const [switchOn, setSwitchOn] = useState(true);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -251,6 +253,15 @@ export function Gallery() {
               hint: m === 45 ? "usual" : undefined,
             }))}
           />
+        </Section>
+
+        <Section title="Switch">
+          <Card className="flex items-center justify-between p-3 pl-4">
+            <span id="dev-switch" className="text-base font-medium">
+              Working on Wednesday
+            </span>
+            <Switch checked={switchOn} onChange={setSwitchOn} aria-labelledby="dev-switch" />
+          </Card>
         </Section>
 
         <Section title="Segmented tabs">
