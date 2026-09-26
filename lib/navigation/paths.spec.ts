@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { backHrefFor, newCasePath, patientPath, schedulePath, visitPath, visitUpdatedPath } from "./paths";
+import {
+  backHrefFor,
+  fileContentPath,
+  filesPath,
+  newCasePath,
+  patientPath,
+  schedulePath,
+  visitPath,
+  visitUpdatedPath,
+} from "./paths";
 
 describe("screen paths", () => {
   it("patientPath", () => {
@@ -26,5 +35,17 @@ describe("screen paths", () => {
   it("visit paths", () => {
     expect(visitPath("p1", "c1")).toBe("/patients/p1/cases/c1/visit");
     expect(visitUpdatedPath("p1", "c1")).toBe("/patients/p1/cases/c1/visit/updated");
+  });
+});
+
+describe("file paths", () => {
+  it("filesPath", () => {
+    expect(filesPath("p1", "c1")).toBe("/patients/p1/cases/c1/files");
+    expect(filesPath("p1", "c1", { fileId: "f1" })).toBe("/patients/p1/cases/c1/files?file=f1");
+  });
+
+  it("fileContentPath", () => {
+    expect(fileContentPath("f1")).toBe("/api/files/f1");
+    expect(fileContentPath("f1", { download: true })).toBe("/api/files/f1?download=1");
   });
 });

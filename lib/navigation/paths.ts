@@ -35,3 +35,13 @@ export function visitPath(patientId: string, caseId: string): string {
 export function visitUpdatedPath(patientId: string, caseId: string): string {
   return `/patients/${patientId}/cases/${caseId}/visit/updated`;
 }
+
+/** All files of one case (mockup screen 8); `file` opens one straight away. */
+export function filesPath(patientId: string, caseId: string, opts: { fileId?: string } = {}): string {
+  return `/patients/${patientId}/cases/${caseId}/files${opts.fileId ? `?file=${opts.fileId}` : ""}`;
+}
+
+/** Opens a file's bytes through a short-lived signed link. */
+export function fileContentPath(fileId: string, opts: { download?: boolean } = {}): string {
+  return `/api/files/${fileId}${opts.download ? "?download=1" : ""}`;
+}

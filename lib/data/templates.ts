@@ -59,3 +59,19 @@ export async function getCaseTypesForSpecialty(specialtyId: string): Promise<Cas
       }),
   }));
 }
+
+/**
+ * A case type's stage names in template order, for one-tap file labels.
+ * The current stage, when given, comes first.
+ */
+export async function getStageNames(caseTypeId: string, currentStageName?: string | null): Promise<string[]> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("stage")
+    .select("name")
+    .eq("case_type_id", caseTypeId)
+    .order("sort_order");
+  if (error) throw new Error(`Could not load stages: ${error.code}`);
+  const names = data.map((s) => s.name);
+  return currentStageName ? [currentStageName, ...names.filter((n) => n !== currentStageName)] : names;
+}
