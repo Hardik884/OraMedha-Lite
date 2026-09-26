@@ -15,6 +15,7 @@ import { Skeleton, SkeletonCard, SkeletonRow, SkeletonText } from "@/components/
 import { EmptyState } from "@/components/ui/empty-state";
 import { Dialog } from "@/components/ui/dialog";
 import { ChoiceList } from "@/components/ui/choice-list";
+import { ChipSelect } from "@/components/ui/chip-select";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { OraMedhaLogo } from "@/components/shared/OraMedhaLogo";
 import { PatientAvatar } from "@/components/shared/PatientAvatar";
@@ -66,6 +67,7 @@ export function Gallery() {
   const [outcome, setOutcome] = useState<string | null>("partial");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [duration, setDuration] = useState("60");
+  const [minutes, setMinutes] = useState(45);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -235,6 +237,19 @@ export function Gallery() {
             ]}
             value={outcome}
             onChange={setOutcome}
+          />
+        </Section>
+
+        <Section title="Chip select (short values)">
+          <ChipSelect
+            label="Duration"
+            value={minutes}
+            onChange={setMinutes}
+            options={[15, 30, 45, 60, 90, 120].map((m) => ({
+              value: m,
+              label: `${m} min`,
+              hint: m === 45 ? "usual" : undefined,
+            }))}
           />
         </Section>
 
