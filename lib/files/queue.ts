@@ -29,6 +29,8 @@ export type UploadItem = {
   retryable: boolean;
   attempts: number;
   addedAt: number;
+  /** Waiting to try again on its own after a dropped connection (ms since epoch). */
+  retryAt?: number;
 };
 
 const BUSY: UploadStatus[] = ["preparing", "uploading", "saving"];
@@ -45,10 +47,10 @@ export function isUnfinished(item: UploadItem): boolean {
 /** Two at a time: quicker than one on decent Wi-Fi, gentle on weak Wi-Fi. */
 export const MAX_PARALLEL_UPLOADS = 2;
 
-export function nextToStart(items: UploadItem[], limit = MAX_PARALLEL_UPLOADS): UploadItem[] {
+export function nextToStart(items: UploadItem[], limit = MAX_PARALLEL_UPLOADS, now = Date.now()): UploadItem[] {
   const free = limit - items.filter(isBusy).length;
   if (free <= 0) return [];
-  return items.filter((i) => i.status === "waiting").slice(0, free);
+  return items.filter((i) => i.status === "waiting" && (i.retryAt ?? 0) <= now).slice(0, free);
 }
 
 export type UploadSummary = { active: number; failed: number; done: number; progress: number };

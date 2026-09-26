@@ -41,6 +41,12 @@ describe("nextToStart", () => {
     expect(nextToStart(items, 2)).toEqual([]);
   });
 
+  it("waits for an automatic retry's time", () => {
+    const items = [item("a", { retryAt: 5000 }), item("b")];
+    expect(nextToStart(items, 2, 1000).map((i) => i.id)).toEqual(["b"]);
+    expect(nextToStart(items, 2, 6000).map((i) => i.id)).toEqual(["a", "b"]);
+  });
+
   it("does not restart failed or finished ones", () => {
     expect(nextToStart([item("a", { status: "failed" }), item("b", { status: "done" })], 2)).toEqual([]);
   });
@@ -55,6 +61,10 @@ describe("summarizeUploads", () => {
       item("d", { status: "failed", size: 1000 }),
     ]);
     expect(s).toEqual({ active: 2, failed: 1, done: 1, progress: 1500 / 4000 });
+  });
+
+  it("counts an upload waiting to retry on its own as still going", () => {
+    expect(summarizeUploads([item("a", { retryAt: 9e15, error: "Trying again…" })]).active).toBe(1);
   });
 
   it("is empty-safe", () => {
