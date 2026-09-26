@@ -272,6 +272,64 @@ export type Database = {
           },
         ]
       }
+      message_log: {
+        Row: {
+          appointment_id: string
+          channel: string
+          created_at: string
+          for_starts_at: string
+          id: string
+          kind: string
+          pg_id: string
+          reminder: string | null
+          status: string
+        }
+        Insert: {
+          appointment_id: string
+          channel?: string
+          created_at?: string
+          for_starts_at: string
+          id?: string
+          kind: string
+          pg_id?: string
+          reminder?: string | null
+          status?: string
+        }
+        Update: {
+          appointment_id?: string
+          channel?: string
+          created_at?: string
+          for_starts_at?: string
+          id?: string
+          kind?: string
+          pg_id?: string
+          reminder?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_log_appointment_same_pg"
+            columns: ["appointment_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "appointment"
+            referencedColumns: ["id", "pg_id"]
+          },
+          {
+            foreignKeyName: "message_log_appointment_same_pg"
+            columns: ["appointment_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_overview"
+            referencedColumns: ["appointment_id", "pg_id"]
+          },
+          {
+            foreignKeyName: "message_log_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       modifier: {
         Row: {
           case_type_id: string
@@ -1018,10 +1076,12 @@ export type Database = {
         Row: {
           appointment_id: string | null
           case_id: string | null
+          case_status: string | null
           case_type_name: string | null
           duration_min: number | null
           patient_id: string | null
           patient_name: string | null
+          patient_phone: string | null
           pg_id: string | null
           purpose: string | null
           stage_name: string | null
@@ -1070,6 +1130,9 @@ export type Database = {
           current_stage_id: string | null
           current_stage_name: string | null
           is_special: boolean | null
+          last_appointment_at: string | null
+          last_appointment_id: string | null
+          last_appointment_status: string | null
           next_appointment_at: string | null
           next_appointment_duration_min: number | null
           next_appointment_id: string | null
@@ -1152,8 +1215,18 @@ export type Database = {
           p_other_work?: string
           p_outcome: string
           p_stage_ids: string[]
+          p_visit_date?: string
         }
         Returns: Json
+      }
+      reschedule_appointment: {
+        Args: {
+          p_appointment_id: string
+          p_duration_min: number
+          p_new_id: string
+          p_starts_at: string
+        }
+        Returns: string
       }
       start_case: {
         Args: {
