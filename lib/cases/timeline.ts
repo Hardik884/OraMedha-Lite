@@ -60,3 +60,43 @@ export function buildTimeline(visits: TimelineVisit[], startedOn: string, today?
   items.push({ kind: "started", id: "started", date: startedOn, title: "Case started" });
   return items;
 }
+
+/**
+ * Files shown under the timeline. A file added during Update Visit belongs to
+ * that visit. One added from the Patient screen is shown under the visit (or
+ * "Case started") on the day it was added; on a day with neither it gets its
+ * own "Files added" entry.
+ */
+export type TimelineFile = {
+  id: string;
+  visitId: string | null;
+  date: string;
+  createdAt: string;
+};
+
+export type TimelineEntry<F extends TimelineFile = TimelineFile> =
+  | (TimelineItem & { files: F[] })
+  | { kind: "files"; id: string; date: string; title: string; files: F[] };
+
+export function attachFiles<F extends TimelineFile>(items: TimelineItem[], files: F[]): TimelineEntry<F>[] {
+  const entries: TimelineEntry<F>[] = items.map((item) => ({ ...item, files: [] }));
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  const loose = new Map<string, F[]>();
+
+  for (const file of [...files].sort((a, b) => a.createdAt.localeCompare(b.createdAt))) {
+    const target =
+      (file.visitId ? byId.get(file.visitId) : undefined) ??
+      entries.find((e) => e.kind === "visit" && e.date === file.date) ??
+      entries.find((e) => e.kind === "started" && e.date === file.date);
+    if (target && target.kind !== "files") target.files.push(file);
+    else loose.set(file.date, [...(loose.get(file.date) ?? []), file]);
+  }
+
+  for (const [date, dayFiles] of loose) {
+    const at = entries.findIndex((e) => e.date < date || (e.date === date && e.kind === "started"));
+    const entry: TimelineEntry<F> = { kind: "files", id: `files-${date}`, date, title: "Files added", files: dayFiles };
+    if (at === -1) entries.push(entry);
+    else entries.splice(at, 0, entry);
+  }
+  return entries;
+}
