@@ -71,6 +71,13 @@ export type Database = {
             foreignKeyName: "appointment_case_same_patient"
             columns: ["case_id", "patient_id", "pg_id"]
             isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_id", "patient_id", "pg_id"]
+          },
+          {
+            foreignKeyName: "appointment_case_same_patient"
+            columns: ["case_id", "patient_id", "pg_id"]
+            isOneToOne: false
             referencedRelation: "patient_case"
             referencedColumns: ["id", "patient_id", "pg_id"]
           },
@@ -92,6 +99,13 @@ export type Database = {
             foreignKeyName: "appointment_planned_stage_id_fkey"
             columns: ["planned_stage_id"]
             isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["current_stage_id"]
+          },
+          {
+            foreignKeyName: "appointment_planned_stage_id_fkey"
+            columns: ["planned_stage_id"]
+            isOneToOne: false
             referencedRelation: "stage"
             referencedColumns: ["id"]
           },
@@ -101,6 +115,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "appointment"
             referencedColumns: ["id", "pg_id"]
+          },
+          {
+            foreignKeyName: "appointment_rescheduled_from_same_pg"
+            columns: ["rescheduled_from_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_overview"
+            referencedColumns: ["appointment_id", "pg_id"]
           },
         ]
       }
@@ -113,6 +134,7 @@ export type Database = {
           name: string
           sort_order: number
           specialty_id: string
+          tooth_required: boolean
         }
         Insert: {
           code: string
@@ -122,6 +144,7 @@ export type Database = {
           name: string
           sort_order?: number
           specialty_id: string
+          tooth_required?: boolean
         }
         Update: {
           code?: string
@@ -131,6 +154,7 @@ export type Database = {
           name?: string
           sort_order?: number
           specialty_id?: string
+          tooth_required?: boolean
         }
         Relationships: [
           {
@@ -196,6 +220,13 @@ export type Database = {
             foreignKeyName: "file_case_same_pg"
             columns: ["case_id", "pg_id"]
             isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_id", "pg_id"]
+          },
+          {
+            foreignKeyName: "file_case_same_pg"
+            columns: ["case_id", "pg_id"]
+            isOneToOne: false
             referencedRelation: "patient_case"
             referencedColumns: ["id", "pg_id"]
           },
@@ -205,6 +236,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pg_profile"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["current_stage_id"]
           },
           {
             foreignKeyName: "file_stage_id_fkey"
@@ -269,6 +307,13 @@ export type Database = {
           stage_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "modifier_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_type_id"]
+          },
           {
             foreignKeyName: "modifier_case_type_id_fkey"
             columns: ["case_type_id"]
@@ -389,6 +434,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "patient_case_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_type_id"]
+          },
           {
             foreignKeyName: "patient_case_case_type_id_fkey"
             columns: ["case_type_id"]
@@ -639,6 +691,13 @@ export type Database = {
             foreignKeyName: "pg_stage_override_stage_id_fkey"
             columns: ["stage_id"]
             isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["current_stage_id"]
+          },
+          {
+            foreignKeyName: "pg_stage_override_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
             referencedRelation: "stage"
             referencedColumns: ["id"]
           },
@@ -719,6 +778,13 @@ export type Database = {
             foreignKeyName: "stage_case_type_id_fkey"
             columns: ["case_type_id"]
             isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "stage_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
             referencedRelation: "case_type"
             referencedColumns: ["id"]
           },
@@ -787,6 +853,20 @@ export type Database = {
             referencedColumns: ["id", "pg_id"]
           },
           {
+            foreignKeyName: "visit_appointment_same_pg"
+            columns: ["appointment_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_overview"
+            referencedColumns: ["appointment_id", "pg_id"]
+          },
+          {
+            foreignKeyName: "visit_case_same_pg"
+            columns: ["case_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_id", "pg_id"]
+          },
+          {
             foreignKeyName: "visit_case_same_pg"
             columns: ["case_id", "pg_id"]
             isOneToOne: false
@@ -799,6 +879,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "modifier"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_next_stage_id_fkey"
+            columns: ["next_stage_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["current_stage_id"]
           },
           {
             foreignKeyName: "visit_next_stage_id_fkey"
@@ -820,7 +907,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          outcome: string
+          outcome: string | null
           pg_id: string
           sort_order: number
           stage_id: string
@@ -830,7 +917,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          outcome: string
+          outcome?: string | null
           pg_id?: string
           sort_order?: number
           stage_id: string
@@ -840,7 +927,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          outcome?: string
+          outcome?: string | null
           pg_id?: string
           sort_order?: number
           stage_id?: string
@@ -854,6 +941,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pg_profile"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_stage_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["current_stage_id"]
           },
           {
             foreignKeyName: "visit_stage_stage_id_fkey"
@@ -873,14 +967,123 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      appointment_overview: {
+        Row: {
+          appointment_id: string | null
+          case_id: string | null
+          case_type_name: string | null
+          duration_min: number | null
+          patient_id: string | null
+          patient_name: string | null
+          pg_id: string | null
+          stage_name: string | null
+          starts_at: string | null
+          status: string | null
+          tooth: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_case_same_patient"
+            columns: ["case_id", "patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_id", "patient_id", "pg_id"]
+          },
+          {
+            foreignKeyName: "appointment_case_same_patient"
+            columns: ["case_id", "patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "patient_case"
+            referencedColumns: ["id", "patient_id", "pg_id"]
+          },
+          {
+            foreignKeyName: "appointment_patient_same_pg"
+            columns: ["patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "patient"
+            referencedColumns: ["id", "pg_id"]
+          },
+          {
+            foreignKeyName: "appointment_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_overview: {
+        Row: {
+          case_id: string | null
+          case_type_id: string | null
+          case_type_name: string | null
+          completed_at: string | null
+          created_at: string | null
+          current_stage_id: string | null
+          current_stage_name: string | null
+          is_special: boolean | null
+          next_appointment_at: string | null
+          next_appointment_duration_min: number | null
+          next_appointment_id: string | null
+          next_appointment_status: string | null
+          patient_age: number | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_opd_number: string | null
+          patient_phone: string | null
+          pg_id: string | null
+          started_on: string | null
+          status: string | null
+          tooth: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_case_patient_same_pg"
+            columns: ["patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "patient"
+            referencedColumns: ["id", "pg_id"]
+          },
+          {
+            foreignKeyName: "patient_case_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       assert_stage_in_case: {
         Args: { p_case_id: string; p_column: string; p_stage_id: string }
         Returns: undefined
       }
+      create_patient_with_case: {
+        Args: {
+          p_age?: number
+          p_case_id: string
+          p_case_type_id: string
+          p_full_name: string
+          p_opd_number?: string
+          p_patient_id: string
+          p_phone: string
+          p_stage_id: string
+          p_tooth?: string
+        }
+        Returns: string
+      }
       ist_today: { Args: never; Returns: string }
+      start_case: {
+        Args: {
+          p_case_id: string
+          p_case_type_id: string
+          p_patient_id: string
+          p_stage_id: string
+          p_tooth?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
