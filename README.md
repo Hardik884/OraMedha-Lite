@@ -31,16 +31,45 @@ npm run check        # type-check + lint + tests + production build
 
 `test/guardrails.spec.ts` fails the tests if a clinical word (e.g. a stage name) is hard-coded in `app/`, `components/` or `lib/`, or if a raw colour / Tailwind palette class is used instead of a design token.
 
-## Supabase (local)
+## Database (Supabase)
 
-Needs Docker Desktop.
+The app uses a **hosted** Supabase project (region ap-south-1). `.env.local` holds its URL and keys, plus `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` for the CLI (see `.env.example`). The CLI reads those automatically in this folder.
 
 ```bash
-npm run db:start     # starts local Supabase; prints API URL + anon key
-cp .env.example .env.local   # then paste the URL and anon key in
-npm run db:reset     # re-apply migrations + seed.sql
-npm run gen:types    # regenerate types/database.types.ts after a migration
+npm run db:new -- add_something   # create a new migration file
+npm run db:push:dry               # show what would be applied to the hosted DB
+npm run db:push                   # apply migrations to the hosted DB
+npm run gen:types                 # regenerate types/database.types.ts from the hosted DB
 ```
+
+Never edit a migration that has already been pushed — add a new one.
+
+### Local stack (optional, for testing)
+
+Needs Docker Desktop. Used to try migrations and run the Row Level Security tests with throwaway users, without touching real data.
+
+```bash
+npm run db:start     # local Supabase on ports 543xx
+npm run db:reset     # re-apply all migrations to the LOCAL database
+npm run test:db      # two-PG RLS isolation tests (refuses to run against anything but localhost)
+npm run db:stop
+```
+
+Local phone login: `98765 43210`, code `123456` (see `supabase/config.toml`; no SMS is sent).
+
+## Phone login on the hosted project
+
+Phone OTP is switched on in the Supabase dashboard, not from this repo (never run `supabase config push`; it would overwrite the dashboard settings).
+
+1. **Authentication → Sign In / Providers → Phone** → enable.
+2. SMS provider: choose **Twilio** and enter placeholder values (e.g. Account SID `AC00000000000000000000000000000000`, Auth Token `placeholder`, Message Service SID `MG00000000000000000000000000000000`). Real SMS needs a real provider later; test numbers never reach it.
+3. **Test phone numbers and OTPs**: add lines like `919876543210=123456` (country code, no `+`), one per tester. Set the expiry date in the future.
+4. Optionally raise **SMS OTP expiry** from 60 to 300 seconds.
+5. Save. Now sign in on the app with `98765 43210` and code `123456`.
+
+## Procedure templates
+
+All clinical knowledge (specialties, case types, stages, durations, gaps, next steps, modifiers) lives in database rows seeded by `supabase/migrations/*_seed_procedure_templates.sql`. Every seeded value has `is_placeholder = true` until confirmed with PGs. App code never names a stage.
 
 ## Where things live
 
@@ -50,6 +79,9 @@ npm run gen:types    # regenerate types/database.types.ts after a migration
 | `app/dev/ui/` | Hidden component gallery |
 | `components/ui/` | Design-system components (from the OraMedha kit, sized for phones) |
 | `components/shared/` | Logo, theme toggle, avatars, status chips, segmented tabs |
+| `app/login`, `app/onboarding` | Phone OTP sign-in and first-login onboarding |
 | `lib/` | Business logic (pure functions + tests) and Supabase clients |
-| `supabase/` | CLI config, migrations, seed data |
+| `supabase/` | CLI config, migrations (schema, RLS, templates) |
+| `test/db/` | Database specs run against the local stack (`npm run test:db`) |
+| `middleware.ts` | Session refresh + sign-in redirect |
 | `scripts/make-icons.mjs` | Regenerates PWA icons from the brand mark (`npm run icons`) |
