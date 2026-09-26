@@ -85,6 +85,13 @@ export type Database = {
             referencedColumns: ["id", "patient_id", "pg_id"]
           },
           {
+            foreignKeyName: "appointment_case_same_patient"
+            columns: ["case_id", "patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_id", "patient_id", "pg_id"]
+          },
+          {
             foreignKeyName: "appointment_patient_same_pg"
             columns: ["patient_id", "pg_id"]
             isOneToOne: false
@@ -104,6 +111,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "case_overview"
             referencedColumns: ["current_stage_id"]
+          },
+          {
+            foreignKeyName: "appointment_planned_stage_id_fkey"
+            columns: ["planned_stage_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["stage_id"]
           },
           {
             foreignKeyName: "appointment_planned_stage_id_fkey"
@@ -160,6 +174,13 @@ export type Database = {
           tooth_required?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "case_type_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["specialty_id"]
+          },
           {
             foreignKeyName: "case_type_specialty_id_fkey"
             columns: ["specialty_id"]
@@ -243,6 +264,13 @@ export type Database = {
             referencedColumns: ["id", "pg_id"]
           },
           {
+            foreignKeyName: "file_case_same_pg"
+            columns: ["case_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_id", "pg_id"]
+          },
+          {
             foreignKeyName: "file_pg_id_fkey"
             columns: ["pg_id"]
             isOneToOne: false
@@ -255,6 +283,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "case_overview"
             referencedColumns: ["current_stage_id"]
+          },
+          {
+            foreignKeyName: "file_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["stage_id"]
           },
           {
             foreignKeyName: "file_stage_id_fkey"
@@ -392,6 +427,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "modifier_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "modifier_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_type_id"]
+          },
+          {
             foreignKeyName: "modifier_next_stage_same_case_type"
             columns: ["override_next_stage_id", "case_type_id"]
             isOneToOne: false
@@ -519,6 +568,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "patient_case_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "patient_case_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_type_id"]
+          },
+          {
             foreignKeyName: "patient_case_patient_same_pg"
             columns: ["patient_id", "pg_id"]
             isOneToOne: false
@@ -587,6 +650,69 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pg_blocked_time_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pg_case_type_target: {
+        Row: {
+          case_type_id: string
+          created_at: string
+          id: string
+          pg_id: string
+          target: number
+          updated_at: string
+        }
+        Insert: {
+          case_type_id: string
+          created_at?: string
+          id?: string
+          pg_id?: string
+          target: number
+          updated_at?: string
+        }
+        Update: {
+          case_type_id?: string
+          created_at?: string
+          id?: string
+          pg_id?: string
+          target?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pg_case_type_target_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "case_overview"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "pg_case_type_target_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "case_type"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pg_case_type_target_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "pg_case_type_target_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "pg_case_type_target_pg_id_fkey"
             columns: ["pg_id"]
             isOneToOne: false
             referencedRelation: "pg_profile"
@@ -713,6 +839,13 @@ export type Database = {
             foreignKeyName: "pg_profile_specialty_id_fkey"
             columns: ["specialty_id"]
             isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["specialty_id"]
+          },
+          {
+            foreignKeyName: "pg_profile_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
             referencedRelation: "specialty"
             referencedColumns: ["id"]
           },
@@ -769,6 +902,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "case_overview"
             referencedColumns: ["current_stage_id"]
+          },
+          {
+            foreignKeyName: "pg_stage_override_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["stage_id"]
           },
           {
             foreignKeyName: "pg_stage_override_stage_id_fkey"
@@ -871,6 +1011,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "stage_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["case_type_id"]
+          },
+          {
+            foreignKeyName: "stage_case_type_id_fkey"
+            columns: ["case_type_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_type_id"]
+          },
+          {
             foreignKeyName: "stage_next_on_complete_same_case_type"
             columns: ["next_stage_on_complete_id", "case_type_id"]
             isOneToOne: false
@@ -965,6 +1119,13 @@ export type Database = {
             referencedColumns: ["id", "pg_id"]
           },
           {
+            foreignKeyName: "visit_case_same_pg"
+            columns: ["case_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_id", "pg_id"]
+          },
+          {
             foreignKeyName: "visit_modifier_id_fkey"
             columns: ["modifier_id"]
             isOneToOne: false
@@ -991,6 +1152,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "case_overview"
             referencedColumns: ["current_stage_id"]
+          },
+          {
+            foreignKeyName: "visit_next_stage_id_fkey"
+            columns: ["next_stage_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["stage_id"]
           },
           {
             foreignKeyName: "visit_next_stage_id_fkey"
@@ -1058,6 +1226,13 @@ export type Database = {
             foreignKeyName: "visit_stage_stage_id_fkey"
             columns: ["stage_id"]
             isOneToOne: false
+            referencedRelation: "logbook_entry"
+            referencedColumns: ["stage_id"]
+          },
+          {
+            foreignKeyName: "visit_stage_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
             referencedRelation: "stage"
             referencedColumns: ["id"]
           },
@@ -1105,6 +1280,13 @@ export type Database = {
             referencedColumns: ["id", "patient_id", "pg_id"]
           },
           {
+            foreignKeyName: "appointment_case_same_patient"
+            columns: ["case_id", "patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["case_id", "patient_id", "pg_id"]
+          },
+          {
             foreignKeyName: "appointment_patient_same_pg"
             columns: ["patient_id", "pg_id"]
             isOneToOne: false
@@ -1147,6 +1329,83 @@ export type Database = {
           started_on: string | null
           status: string | null
           tooth: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_case_patient_same_pg"
+            columns: ["patient_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "patient"
+            referencedColumns: ["id", "pg_id"]
+          },
+          {
+            foreignKeyName: "patient_case_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logbook_entry: {
+        Row: {
+          case_id: string | null
+          case_type_id: string | null
+          case_type_name: string | null
+          entry_id: string | null
+          is_special: boolean | null
+          opd_number: string | null
+          outcome: string | null
+          patient_id: string | null
+          patient_name: string | null
+          pg_id: string | null
+          specialty_id: string | null
+          stage_id: string | null
+          stage_name: string | null
+          stage_sort: number | null
+          tooth: string | null
+          visit_created_at: string | null
+          visit_date: string | null
+          visit_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_type_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["specialty_id"]
+          },
+          {
+            foreignKeyName: "case_type_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialty"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_stage_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      progress_case: {
+        Row: {
+          case_id: string | null
+          case_type_id: string | null
+          case_type_name: string | null
+          case_type_sort: number | null
+          completed_on: string | null
+          is_special: boolean | null
+          patient_id: string | null
+          pg_id: string | null
+          specialty_id: string | null
+          specialty_name: string | null
+          started_on: string | null
+          status: string | null
         }
         Relationships: [
           {
