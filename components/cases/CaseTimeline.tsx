@@ -1,11 +1,24 @@
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatShortDate } from "@/lib/dates";
 import type { TimelineItem } from "@/lib/cases/timeline";
 
-/** Case history, newest first — built from visits, never typed in. */
-export function CaseTimeline({ items, today }: { items: TimelineItem[]; today: string }) {
+/**
+ * Case history, newest first — built from visits, never typed in. Today's
+ * visit has an Edit link, for fixing a mis-tap (e.g. Complete for Partial).
+ */
+export function CaseTimeline({
+  items,
+  today,
+  editHref,
+}: {
+  items: TimelineItem[];
+  today: string;
+  editHref?: string;
+}) {
   return (
     <Card className="px-4 py-2">
       <ol>
@@ -35,7 +48,20 @@ export function CaseTimeline({ items, today }: { items: TimelineItem[]; today: s
                 >
                   {item.title}
                 </p>
-                {item.kind === "visit" && <Badge variant={item.status.variant}>{item.status.label}</Badge>}
+                {item.kind === "visit" && (
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <Badge variant={item.status.variant}>{item.status.label}</Badge>
+                    {item.editable && editHref && item.status.label !== "In progress" && (
+                      <Link
+                        href={editHref}
+                        className="-mr-2 flex h-9 items-center gap-1 rounded-lg px-2 text-sm font-medium text-accent active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        <Pencil className="h-3.5 w-3.5" aria-hidden />
+                        Edit
+                      </Link>
+                    )}
+                  </span>
+                )}
               </div>
             </li>
           );

@@ -25,3 +25,13 @@ export const NEW_PATIENT_PATH = "/patients/new";
 export function backHrefFor(from: string | null | undefined): string {
   return from === "today" ? "/today" : "/patients";
 }
+
+/** Update Visit (and editing today's visit) for one case. */
+export function visitPath(patientId: string, caseId: string): string {
+  return `/patients/${patientId}/cases/${caseId}/visit`;
+}
+
+/** "Visit updated" — what just happened. */
+export function visitUpdatedPath(patientId: string, caseId: string): string {
+  return `/patients/${patientId}/cases/${caseId}/visit/updated`;
+}

@@ -56,4 +56,25 @@ describe("buildTimeline", () => {
       { kind: "started", id: "started", date: "2026-09-26", title: "Case started" },
     ]);
   });
+
+  it("adds Other work to the title and uses the visit's own outcome when that's all there is", () => {
+    const [item] = buildTimeline(
+      [{ id: "v", visitDate: "2026-09-26", stages: [], otherWork: "Pain relief", outcome: "complete" }],
+      "2026-09-20",
+    );
+    expect(item!.title).toBe("Pain relief");
+    expect(item!.kind === "visit" && item!.status.label).toBe("Completed");
+  });
+
+  it("only today's visit is editable", () => {
+    const items = buildTimeline(
+      [
+        { id: "a", visitDate: "2026-09-26", stages: [{ name: "S", outcome: "partial", sortOrder: 1 }] },
+        { id: "b", visitDate: "2026-09-20", stages: [{ name: "S", outcome: "complete", sortOrder: 1 }] },
+      ],
+      "2026-09-20",
+      "2026-09-26",
+    );
+    expect(items.map((i) => i.kind === "visit" && i.editable)).toEqual([true, false, false]);
+  });
 });

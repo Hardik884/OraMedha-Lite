@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { backHrefFor, newCasePath, patientPath, schedulePath } from "./paths";
+import { backHrefFor, newCasePath, patientPath, schedulePath, visitPath, visitUpdatedPath } from "./paths";
 
 describe("screen paths", () => {
   it("patientPath", () => {
@@ -21,5 +21,10 @@ describe("screen paths", () => {
     expect(backHrefFor("patients")).toBe("/patients");
     expect(backHrefFor("https://evil.example")).toBe("/patients");
     expect(backHrefFor(null)).toBe("/patients");
+  });
+
+  it("visit paths", () => {
+    expect(visitPath("p1", "c1")).toBe("/patients/p1/cases/c1/visit");
+    expect(visitUpdatedPath("p1", "c1")).toBe("/patients/p1/cases/c1/visit/updated");
   });
 });

@@ -1,43 +1,64 @@
 import Link from "next/link";
+import { Check, ClipboardPen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AppointmentStatusBadge } from "@/components/shared/AppointmentStatusBadge";
 import { caseLabel } from "@/lib/cases/status";
 import { formatTime } from "@/lib/dates";
-import { patientPath } from "@/lib/navigation/paths";
+import { patientPath, visitPath } from "@/lib/navigation/paths";
 import type { AppointmentListItem } from "@/lib/data/appointments";
 
 /**
  * One appointment on Today (mockup screen 1):
  *
- *   9:00 AM   Rahul Sharma            [Confirmed]
- *             46 · <case type>
+ *   9:00 AM   Rahul Sharma        [Confirmed]
+ *             46 · <case type>       [Update]
  *             <stage>
  *
- * The status sits on the name line so the case details below get the full
- * width instead of being cut off. One tap opens the case.
+ * Status and the action share a right-hand column so the name and case
+ * details keep the full middle width on a narrow phone.
+ *
+ * Tapping the row opens the case; "Update" goes straight to Update Visit.
+ * Once the visit is updated the button becomes a quiet "Updated" mark.
  */
 export function AppointmentRow({ appointment: a }: { appointment: AppointmentListItem }) {
+  const canUpdate = a.caseId && ["scheduled", "confirmed", "unconfirmed"].includes(a.status);
+  const updated = a.caseId && a.status === "completed";
+  const stageLine = a.purpose === "review" ? "Review visit" : a.stageName;
+
   return (
-    <li>
+    <li className="flex items-stretch">
       <Link
         href={patientPath(a.patientId, { caseId: a.caseId ?? undefined, from: "today" })}
-        className="flex gap-3 px-4 py-3.5 active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+        className="flex min-w-0 flex-1 gap-3 py-3.5 pl-4 pr-2 active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
       >
         <span className="w-[4.25rem] shrink-0 pt-0.5 text-sm font-medium tabular-nums text-text-body">
           {formatTime(a.startsAt)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="flex items-start justify-between gap-2">
-            <span className="min-w-0 truncate text-base font-semibold text-text-primary">{a.patientName}</span>
-            <AppointmentStatusBadge status={a.status} className="mt-0.5 shrink-0" />
-          </span>
+          <span className="block truncate text-base font-semibold text-text-primary">{a.patientName}</span>
           {a.caseTypeName && (
-            <span className="block truncate text-sm text-text-secondary">
-              {caseLabel(a.tooth, a.caseTypeName)}
-            </span>
+            <span className="block truncate text-sm text-text-secondary">{caseLabel(a.tooth, a.caseTypeName)}</span>
           )}
-          {a.stageName && <span className="block truncate text-sm text-text-body">{a.stageName}</span>}
+          {stageLine && <span className="block truncate text-sm text-text-body">{stageLine}</span>}
         </span>
       </Link>
+      <div className="flex shrink-0 flex-col items-end justify-start gap-2 py-3.5 pr-3">
+        <AppointmentStatusBadge status={a.status} />
+        {(canUpdate || updated) &&
+          (canUpdate ? (
+            <Button asChild variant="outline" size="lg" className="px-3">
+              <Link href={visitPath(a.patientId, a.caseId!)} aria-label={`Update ${a.patientName}'s visit`}>
+                <ClipboardPen className="h-4 w-4 text-accent" aria-hidden />
+                Update
+              </Link>
+            </Button>
+          ) : (
+            <span className="flex items-center gap-1 px-1 text-sm text-success">
+              <Check className="h-4 w-4" aria-hidden />
+              Updated
+            </span>
+          ))}
+      </div>
     </li>
   );
 }

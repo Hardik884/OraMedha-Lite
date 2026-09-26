@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FolderOpen, MessageCircle, Phone, Stethoscope } from "lucide-react";
+import { ClipboardPen, FolderOpen, MessageCircle, Phone, Stethoscope } from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { istToday } from "@/lib/dates";
 import { buildTimeline } from "@/lib/cases/timeline";
 import { formatIndianMobile } from "@/lib/auth/phone";
 import { telHref, whatsappHref } from "@/lib/contact/links";
-import { backHrefFor, newCasePath, schedulePath, type BackTo } from "@/lib/navigation/paths";
+import { backHrefFor, newCasePath, schedulePath, visitPath, type BackTo } from "@/lib/navigation/paths";
 
 export const metadata: Metadata = { title: "Patient" };
 
@@ -64,6 +64,7 @@ export default async function PatientPage({
   ].filter(Boolean);
 
   const needsAppointment = selected?.status === "ongoing" && !selected.nextAppointment;
+  const updatedToday = visits.some((v) => v.visitDate === today && v.outcome !== null && v.outcome !== undefined);
 
   return (
     <>
@@ -101,7 +102,11 @@ export default async function PatientPage({
             />
 
             <Section title="Case timeline">
-              <CaseTimeline items={buildTimeline(visits, selected.startedOn)} today={today} />
+              <CaseTimeline
+                items={buildTimeline(visits, selected.startedOn, today)}
+                today={today}
+                editHref={visitPath(patient.id, selected.caseId)}
+              />
             </Section>
 
             <Section title="Files">
@@ -119,7 +124,15 @@ export default async function PatientPage({
       </main>
 
       <BottomActions>
-        {needsAppointment && (
+        {selected?.status === "ongoing" && !updatedToday && (
+          <Button asChild size="xl" block>
+            <Link href={visitPath(patient.id, selected.caseId)}>
+              <ClipboardPen className="h-5 w-5" aria-hidden />
+              Update today&apos;s visit
+            </Link>
+          </Button>
+        )}
+        {selected?.status === "ongoing" && updatedToday && needsAppointment && (
           <Button asChild size="xl" block>
             <Link href={schedulePath(patient.id, selected.caseId)}>Schedule next visit</Link>
           </Button>

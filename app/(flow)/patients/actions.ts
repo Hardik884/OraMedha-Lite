@@ -126,6 +126,8 @@ export async function scheduleAppointment(input: {
   if (!result.ok) return { errors: result.errors };
 
   const supabase = await createServerClient();
+  // A completed case can only be booked for a review/recall.
+  const { data: kase } = await supabase.from("patient_case").select("status").eq("id", input.caseId).maybeSingle();
   const { error } = await supabase.from("appointment").insert({
     id: input.appointmentId,
     patient_id: input.patientId,
@@ -133,6 +135,7 @@ export async function scheduleAppointment(input: {
     starts_at: result.value.startsAt,
     duration_min: result.value.durationMin,
     status: "scheduled",
+    purpose: kase?.status === "completed" ? "review" : "treatment",
   });
   // A retry of a save that already landed: the appointment is booked.
   if (error && error.code !== UNIQUE_VIOLATION) {

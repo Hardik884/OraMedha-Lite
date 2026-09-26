@@ -31,6 +31,7 @@ export type CaseSummary = {
     startsAt: string;
     durationMin: number;
     status: AppointmentStatus;
+    purpose: "treatment" | "review";
   } | null;
 };
 
@@ -69,6 +70,7 @@ export function toCaseSummary(row: CaseOverviewRow): CaseSummary {
             startsAt: row.next_appointment_at,
             durationMin: row.next_appointment_duration_min ?? 30,
             status: toAppointmentStatus(row.next_appointment_status),
+            purpose: row.next_appointment_purpose === "review" ? "review" : "treatment",
           }
         : null,
   };
@@ -118,22 +120,25 @@ export async function getCaseVisits(caseId: string): Promise<TimelineVisit[]> {
   const { data, error } = await supabase
     .from("visit")
     .select(
-      "id, visit_date, visit_stage!visit_stage_visit_same_pg (outcome, stage:stage_id (name, sort_order))",
+      "id, visit_date, outcome, other_work, visit_stage!visit_stage_visit_same_pg (outcome, stage:stage_id (name, sort_order))",
     )
     .eq("case_id", caseId)
     .is("deleted_at", null)
     .order("visit_date", { ascending: false });
   if (error) throw new Error(`Could not load visits: ${error.code}`);
 
+  const asOutcome = (o: string | null): VisitOutcome => (o === "partial" || o === "complete" ? o : null);
   return data.map((v) => ({
     id: v.id,
     visitDate: v.visit_date,
+    otherWork: v.other_work,
+    outcome: asOutcome(v.outcome),
     stages: v.visit_stage
       .filter((vs) => vs.stage)
       .map((vs) => ({
         name: vs.stage!.name,
         sortOrder: vs.stage!.sort_order,
-        outcome: (vs.outcome === "partial" || vs.outcome === "complete" ? vs.outcome : null) as VisitOutcome,
+        outcome: asOutcome(vs.outcome),
       })),
   }));
 }

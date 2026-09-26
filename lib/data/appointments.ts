@@ -14,6 +14,7 @@ export type AppointmentListItem = {
   tooth: string | null;
   caseTypeName: string | null;
   stageName: string | null;
+  purpose: "treatment" | "review";
 };
 
 /** One India calendar day's appointments, in time order. Cancelled ones are left out. */
@@ -45,6 +46,7 @@ export async function getAppointmentsOn(date: string): Promise<AppointmentListIt
             tooth: a.tooth,
             caseTypeName: a.case_type_name,
             stageName: a.stage_name,
+            purpose: a.purpose === "review" ? ("review" as const) : ("treatment" as const),
           },
         ]
       : [],

@@ -10,6 +10,10 @@ export type TimelineVisit = {
   id: string;
   visitDate: string;
   stages: { name: string; outcome: VisitOutcome; sortOrder: number }[];
+  /** Work that isn't in the template ("Other"). */
+  otherWork?: string | null;
+  /** The visit's own outcome — used when only "Other" work was done. */
+  outcome?: VisitOutcome;
 };
 
 export type TimelineItem =
@@ -19,6 +23,8 @@ export type TimelineItem =
       date: string;
       title: string;
       status: { label: string; variant: BadgeVariant };
+      /** Today's visit can be corrected (e.g. Complete tapped instead of Partial). */
+      editable: boolean;
     }
   | { kind: "started"; id: string; date: string; title: string };
 
@@ -35,17 +41,19 @@ function visitStatus(outcomes: VisitOutcome[]) {
   return OUTCOME_STATUS.partial;
 }
 
-export function buildTimeline(visits: TimelineVisit[], startedOn: string): TimelineItem[] {
+export function buildTimeline(visits: TimelineVisit[], startedOn: string, today?: string): TimelineItem[] {
   const items: TimelineItem[] = [...visits]
     .sort((a, b) => b.visitDate.localeCompare(a.visitDate))
     .map((v) => {
       const stages = [...v.stages].sort((a, b) => a.sortOrder - b.sortOrder);
+      const names = [...stages.map((s) => s.name), ...(v.otherWork ? [v.otherWork] : [])];
       return {
         kind: "visit" as const,
         id: v.id,
         date: v.visitDate,
-        title: stages.length > 0 ? stages.map((s) => s.name).join(" + ") : "Visit",
-        status: visitStatus(stages.map((s) => s.outcome)),
+        title: names.length > 0 ? names.join(" + ") : "Visit",
+        status: visitStatus(stages.length > 0 ? stages.map((s) => s.outcome) : [v.outcome ?? null]),
+        editable: today !== undefined && v.visitDate === today,
       };
     });
 

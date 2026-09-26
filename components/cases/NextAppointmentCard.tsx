@@ -35,7 +35,9 @@ export function NextAppointmentCard({
 
   return (
     <Card className="p-4">
-      <p className="mb-2 text-xs text-text-secondary">Next appointment</p>
+      <p className="mb-2 text-xs text-text-secondary">
+        {next.purpose === "review" ? "Review visit" : "Next appointment"}
+      </p>
       <div className="flex items-center gap-3">
         <CalendarDays className="h-5 w-5 shrink-0 text-accent" aria-hidden />
         <div className="min-w-0 flex-1">
