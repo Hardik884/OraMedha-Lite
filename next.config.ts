@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /*
+   * Lets a dev server pointed at the LOCAL Supabase stack build into its own
+   * folder (NEXT_DIST_DIR=.next-local). Public env vars are compiled into the
+   * bundle, so sharing `.next` with a hosted-project build can silently serve
+   * the hosted URL to what was meant to be a local test run.
+   */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
+  /*
    * Lets `npm run dev:phone` be opened from a phone on the same Wi-Fi
    * (http://192.168.x.x:3000). Without it Next.js treats the phone as a
    * cross-origin client and can refuse dev assets and hot reload.

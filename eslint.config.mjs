@@ -22,6 +22,7 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**",
+      ".next-local/**",
       "node_modules/**",
       "next-env.d.ts",
       // Read-only reference kit copied from the main OraMedha app.
