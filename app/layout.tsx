@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegister } from "@/components/providers/ServiceWorkerRegister";
+import { UploadWatcher } from "@/components/files/UploadWatcher";
 import { THEME_INIT_SCRIPT } from "@/lib/theme/script";
 import { THEME_COLORS } from "@/lib/theme/colors";
 import "./globals.css";
@@ -85,7 +86,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          {/* File uploads carry on across screens; this watches them. */}
+          <UploadWatcher />
+        </ThemeProvider>
         <ServiceWorkerRegister />
         {/*
           NO PRODUCT ANALYTICS, DELIBERATELY (same rule as the main app).

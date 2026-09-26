@@ -5,9 +5,21 @@ import { cn } from "@/lib/utils";
 
 interface SegmentedTabsProps {
   tabs: { key: string; label: string; count?: number }[];
-  /** Pre-rendered content for each tab, keyed the same as `tabs[].key`. */
-  panels: Record<string, React.ReactNode>;
+  /**
+   * Pre-rendered content for each tab, keyed the same as `tabs[].key`. Leave
+   * out when the parent controls the tab (`value` + `onChange`) and renders
+   * the content itself.
+   */
+  panels?: Record<string, React.ReactNode>;
   defaultKey?: string;
+  /** Controlled mode: the selected tab and a handler. */
+  value?: string;
+  onChange?: (key: string) => void;
+  /**
+   * Segments share the width equally (default). `false` sizes each segment to
+   * its label, so four labels such as the file filters fit on a small phone.
+   */
+  equalWidth?: boolean;
   /** Stretch the control to full width with equal segments (default on Lite). */
   fullWidth?: boolean;
   className?: string;
@@ -24,10 +36,18 @@ export function SegmentedTabs({
   tabs,
   panels,
   defaultKey,
+  value,
+  onChange,
   fullWidth = true,
+  equalWidth = true,
   className,
 }: SegmentedTabsProps) {
-  const [active, setActive] = useState(defaultKey ?? tabs[0]?.key);
+  const [own, setOwn] = useState(defaultKey ?? tabs[0]?.key);
+  const active = value ?? own;
+  const setActive = (key: string) => {
+    setOwn(key);
+    onChange?.(key);
+  };
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -49,8 +69,9 @@ export function SegmentedTabs({
               data-compact
               onClick={() => setActive(tab.key)}
               className={cn(
-                "inline-flex h-10 items-center justify-center gap-1.5 px-4 text-sm font-medium rounded-[8px] transition-all duration-150 cursor-pointer",
-                fullWidth && "flex-1",
+                "inline-flex h-10 items-center justify-center gap-1.5 text-sm font-medium rounded-[8px] transition-all duration-150 cursor-pointer whitespace-nowrap",
+                fullWidth && (equalWidth ? "flex-1 px-4" : "flex-auto px-3"),
+                !fullWidth && "px-4",
                 selected
                   ? "bg-surface text-text-primary shadow-sm"
                   : "text-text-secondary hover:text-text-primary"
@@ -72,11 +93,12 @@ export function SegmentedTabs({
         })}
       </div>
 
-      {tabs.map((tab) => (
-        <div key={tab.key} role="tabpanel" className={active === tab.key ? "" : "hidden"}>
-          {panels[tab.key]}
-        </div>
-      ))}
+      {panels &&
+        tabs.map((tab) => (
+          <div key={tab.key} role="tabpanel" className={active === tab.key ? "" : "hidden"}>
+            {panels[tab.key]}
+          </div>
+        ))}
     </div>
   );
 }

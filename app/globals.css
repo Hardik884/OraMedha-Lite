@@ -38,6 +38,8 @@
   /* Pressed state for neutral (secondary) buttons, and the modal scrim. */
   --color-surface-pressed: #D8E0DB;
   --color-scrim: #0B0F0E;
+  /* Text and icons over the scrim (the full-screen file viewer), both themes. */
+  --color-scrim-foreground: #FFFFFF;
 
   /* Emerald is the brand accent — used sparingly for primary actions, active
      states and selected options. Never a background wash. */
