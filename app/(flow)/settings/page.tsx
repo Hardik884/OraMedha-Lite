@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarOff, ChevronRight, Clock, SlidersHorizontal, Target, Timer } from "lucide-react";
+import { CalendarOff, ChevronRight, Clock, Compass, MessageSquareText, SlidersHorizontal, Target, Timer } from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { PatientAvatar } from "@/components/shared/PatientAvatar";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -10,6 +10,7 @@ import { SignOutButton } from "@/components/settings/SignOutButton";
 import { requirePg } from "@/lib/pg/require";
 import { getBlockedTimes, getModifierDefaults, getPreferences, getStageDefaults } from "@/lib/data/settings";
 import { getTargets } from "@/lib/data/progress";
+import { settingsBackHref } from "@/lib/feedback/screen";
 import { summarizeWorkingHours } from "@/lib/settings/working-hours";
 import { isCurrentBlock } from "@/lib/settings/blocked";
 import { formatIndianMobile } from "@/lib/auth/phone";
@@ -20,8 +21,9 @@ function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
   const pg = await requirePg();
+  const { from } = await searchParams;
   const [prefs, blocks, stageDefaults, modifiers, targets] = await Promise.all([
     getPreferences(),
     getBlockedTimes(),
@@ -39,7 +41,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <FlowHeader backHref="/today" backLabel="Back to Today" title="Settings" />
+      <FlowHeader backHref={settingsBackHref(from)} backLabel="Back" title="Settings" />
       <main className="mx-auto max-w-lg space-y-6 px-4 pt-5 pb-12">
         {/* Profile */}
         <Link
@@ -118,6 +120,18 @@ export default async function SettingsPage() {
           <div className="p-4">
             <ThemeToggle className="w-full" />
           </div>
+        </SettingsGroup>
+
+        <SettingsGroup title="Help">
+          <ul className="divide-y divide-border">
+            <SettingsRow href="/welcome?replay=1" icon={Compass} title="How OraMedha works" summary="The three-screen tour" />
+            <SettingsRow
+              href={`/settings/feedback${from ? `?from=${encodeURIComponent(from)}` : ""}`}
+              icon={MessageSquareText}
+              title="Send feedback"
+              summary="Tell us what's confusing, missing or broken"
+            />
+          </ul>
         </SettingsGroup>
 
         <SignOutButton />
