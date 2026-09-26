@@ -33,6 +33,8 @@ export type CaseSummary = {
     status: AppointmentStatus;
     purpose: "treatment" | "review";
   } | null;
+  /** The case's most recent appointment, whatever happened to it. */
+  lastAppointment: { id: string; startsAt: string; status: AppointmentStatus } | null;
 };
 
 /** View columns are typed nullable; these ones never are for a real row. */
@@ -71,6 +73,14 @@ export function toCaseSummary(row: CaseOverviewRow): CaseSummary {
             durationMin: row.next_appointment_duration_min ?? 30,
             status: toAppointmentStatus(row.next_appointment_status),
             purpose: row.next_appointment_purpose === "review" ? "review" : "treatment",
+          }
+        : null,
+    lastAppointment:
+      row.last_appointment_id && row.last_appointment_at
+        ? {
+            id: row.last_appointment_id,
+            startsAt: row.last_appointment_at,
+            status: toAppointmentStatus(row.last_appointment_status),
           }
         : null,
   };

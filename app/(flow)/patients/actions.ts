@@ -11,7 +11,7 @@ import {
   type NewPatientFields,
 } from "@/lib/patients/validate";
 import { validateAppointment } from "@/lib/appointments/validate";
-import { patientPath, schedulePath } from "@/lib/navigation/paths";
+import { bookedPath, schedulePath } from "@/lib/navigation/paths";
 
 /**
  * Every action here is SAFE TO RETRY. The phone generates the new row's id
@@ -117,6 +117,8 @@ export async function scheduleAppointment(input: {
   date: string;
   time: string;
   durationMin: number;
+  /** Booked as step 3 of New Patient / a new case. */
+  isNew?: boolean;
 }): Promise<ActionResult<"date" | "time" | "durationMin">> {
   if (!isUuid(input.appointmentId) || !isUuid(input.patientId) || !isUuid(input.caseId)) {
     return { formError: SAVE_FAILED };
@@ -143,5 +145,6 @@ export async function scheduleAppointment(input: {
     return { formError: SAVE_FAILED };
   }
 
-  redirect(patientPath(input.patientId, { caseId: input.caseId }));
+  // Next: offer the "appointment booked" message.
+  redirect(bookedPath(input.patientId, input.appointmentId, { isNew: input.isNew }));
 }

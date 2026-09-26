@@ -39,17 +39,27 @@ export type VisitContext = {
   /** The case's next live appointment on a LATER day — Next Step moves it rather than adding another. */
   upcomingAppointment: { id: string; startsAt: string } | null;
   today: string;
+  /** The day being recorded: today, or an earlier day for a forgotten update. */
+  visitDate: string;
+  /** A visit recorded on a later day than `visitDate` (then this one can't be recorded). */
+  hasLaterVisit: boolean;
 };
 
-export async function getVisitContext(caseId: string): Promise<VisitContext | null> {
+/**
+ * `visitDate` defaults to today. For an earlier day (a forgotten update),
+ * "today's visit" and "today's appointment" mean that day's.
+ */
+export async function getVisitContext(caseId: string, visitDate?: string): Promise<VisitContext | null> {
   const kase = await getCase(caseId);
   if (!kase) return null;
 
   const supabase = await createServerClient();
   const today = istToday();
-  const { start, end } = istDayRange(today);
+  const day = visitDate ?? today;
+  const { start, end } = istDayRange(day);
+  const upcomingFrom = new Date(Math.max(Date.parse(end), Date.now())).toISOString();
 
-  const [stages, modifiers, stageOv, modOv, visit, todayAppts, upcoming] = await Promise.all([
+  const [stages, modifiers, stageOv, modOv, visit, todayAppts, upcoming, later] = await Promise.all([
     supabase
       .from("stage")
       .select(
@@ -75,7 +85,7 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
           "visit_stage!visit_stage_visit_same_pg (stage_id)",
       )
       .eq("case_id", caseId)
-      .eq("visit_date", today)
+      .eq("visit_date", day)
       .is("deleted_at", null)
       .maybeSingle(),
     supabase
@@ -94,12 +104,19 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
       .eq("case_id", caseId)
       .is("deleted_at", null)
       .in("status", ["scheduled", "confirmed", "unconfirmed"])
-      .gte("starts_at", end)
+      .gte("starts_at", upcomingFrom)
       .order("starts_at")
+      .limit(1),
+    supabase
+      .from("visit")
+      .select("id")
+      .eq("case_id", caseId)
+      .gt("visit_date", day)
+      .is("deleted_at", null)
       .limit(1),
   ]);
 
-  for (const r of [stages, modifiers, stageOv, modOv, visit, todayAppts, upcoming]) {
+  for (const r of [stages, modifiers, stageOv, modOv, visit, todayAppts, upcoming, later]) {
     if (r.error) throw new Error(`Could not load visit context: ${r.error.code}`);
   }
 
@@ -184,6 +201,8 @@ export async function getVisitContext(caseId: string): Promise<VisitContext | nu
       : null,
     upcomingAppointment: upcoming.data![0] ? { id: upcoming.data![0].id, startsAt: upcoming.data![0].starts_at } : null,
     today,
+    visitDate: day,
+    hasLaterVisit: (later.data?.length ?? 0) > 0,
   };
 }
 

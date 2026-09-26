@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/ids";
-import { istToday } from "@/lib/dates";
+import { isIsoDate, istToday } from "@/lib/dates";
+import { canRecordVisitOn } from "@/lib/visits/backdate";
 import { validateNextStep, validateVisit, type NextStepFields, type VisitFields } from "@/lib/visits/validate";
 import { visitUpdatedPath } from "@/lib/navigation/paths";
 
@@ -28,6 +29,8 @@ export async function recordVisit(input: {
   caseId: string;
   visitId: string;
   appointmentId: string;
+  /** Today, or an earlier day for a forgotten update (up to 7 days back). */
+  visitDate?: string;
   visit: VisitFields;
   modifierId: string | null;
   next: NextStepFields;
@@ -41,10 +44,16 @@ export async function recordVisit(input: {
   }
   if (!input.visit.stageIds.every(isUuid)) return { formError: SAVE_FAILED };
 
+  const now = new Date();
+  const today = istToday(now);
+  const visitDate = input.visitDate ?? today;
+  if (!isIsoDate(visitDate) || !canRecordVisitOn(visitDate, today)) {
+    return { formError: "A visit can be recorded for today or up to 7 days back." };
+  }
+
   const visit = validateVisit(input.visit);
   if (!visit.ok) return { errors: visit.errors };
-  const now = new Date();
-  const next = validateNextStep(input.next, now, istToday(now));
+  const next = validateNextStep(input.next, now, today);
   if (!next.ok) return { errors: next.errors };
 
   const supabase = await createServerClient();
@@ -62,11 +71,15 @@ export async function recordVisit(input: {
     p_next_appointment_id: appointment ? input.appointmentId : undefined,
     p_next_starts_at: appointment?.startsAt,
     p_next_duration_min: appointment?.durationMin,
+    p_visit_date: visitDate === today ? undefined : visitDate,
   });
   if (error) {
     console.error("recordVisit failed", error.code);
+    if (error.message.includes("later visit")) {
+      return { formError: "A later visit is already recorded for this case, so this one can't be added now." };
+    }
     return { formError: SAVE_FAILED };
   }
 
-  redirect(visitUpdatedPath(input.patientId, input.caseId));
+  redirect(visitUpdatedPath(input.patientId, input.caseId, { date: visitDate === today ? undefined : visitDate }));
 }

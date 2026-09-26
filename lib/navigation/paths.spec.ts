@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   backHrefFor,
+  bookedPath,
+  reschedulePath,
   fileContentPath,
   filesPath,
   newCasePath,
@@ -47,5 +49,22 @@ describe("file paths", () => {
   it("fileContentPath", () => {
     expect(fileContentPath("f1")).toBe("/api/files/f1");
     expect(fileContentPath("f1", { download: true })).toBe("/api/files/f1?download=1");
+  });
+});
+
+describe("appointment paths", () => {
+  it("bookedPath", () => {
+    expect(bookedPath("p1", "a1")).toBe("/patients/p1/appointments/a1");
+    expect(bookedPath("p1", "a1", { rescheduled: true })).toBe("/patients/p1/appointments/a1?rescheduled=1");
+    expect(bookedPath("p1", "a1", { isNew: true })).toBe("/patients/p1/appointments/a1?new=1");
+  });
+
+  it("reschedulePath", () => {
+    expect(reschedulePath("p1", "a1")).toBe("/patients/p1/appointments/a1/reschedule");
+  });
+
+  it("visitPath and visitUpdatedPath take an earlier date", () => {
+    expect(visitPath("p1", "c1", { date: "2026-09-25" })).toBe("/patients/p1/cases/c1/visit?date=2026-09-25");
+    expect(visitUpdatedPath("p1", "c1", { date: "2026-09-25" })).toBe("/patients/p1/cases/c1/visit/updated?date=2026-09-25");
   });
 });
