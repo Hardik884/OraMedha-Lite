@@ -1,0 +1,35 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /*
+   * Lets `npm run dev:phone` be opened from a phone on the same Wi-Fi
+   * (http://192.168.x.x:3000). Without it Next.js treats the phone as a
+   * cross-origin client and can refuse dev assets and hot reload.
+   * Development only — this setting has no effect on a production build.
+   */
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*", "*.local"],
+
+  async headers() {
+    return [
+      {
+        // The service worker must never be served stale, or a fixed bug
+        // stays on PGs' phones until the cache happens to expire.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
