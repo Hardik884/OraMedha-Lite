@@ -1,10 +1,11 @@
 /**
- * When patients get their appointment reminder. Stored now; the reminder
- * sending itself arrives with patient messages (Slice 7).
+ * When patients get their appointment reminder. Today lists the reminders
+ * due (one tap each opens WhatsApp), and an appointment not confirmed by
+ * then shows as Unconfirmed (lib/appointments/timing.ts).
  */
 export const REMINDER_TIMINGS = [
-  { value: "evening_before", label: "The evening before", description: "Around 7 PM the day before" },
-  { value: "two_hours_before", label: "2 hours before", description: "On the day of the appointment" },
+  { value: "evening_before", label: "The evening before", description: "Today lists tomorrow’s patients from 4 PM" },
+  { value: "two_hours_before", label: "2 hours before", description: "Today nudges you shortly before each appointment" },
   { value: "both", label: "Both", description: "The evening before and 2 hours before" },
 ] as const;
 

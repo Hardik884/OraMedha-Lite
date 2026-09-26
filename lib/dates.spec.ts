@@ -6,6 +6,7 @@ import {
   formatRelativeDay,
   formatShortDate,
   formatTime,
+  formatWeekdayDate,
   isIsoDate,
   isoWeekday,
   istDateOf,
@@ -89,6 +90,11 @@ describe("display formats", () => {
     expect(formatRelativeDay("2026-09-27", today)).toBe("Tomorrow");
     expect(formatRelativeDay("2026-09-25", today)).toBe("Yesterday");
     expect(formatRelativeDay("2026-09-29", today)).toBe("Tue, 29 Sep");
+  });
+
+  it("formatWeekdayDate never says Today/Tomorrow", () => {
+    expect(formatWeekdayDate("2026-09-27", today)).toBe("Sun, 27 Sep");
+    expect(formatWeekdayDate("2026-09-26", today)).toBe("Sat, 26 Sep");
   });
 
   it("formatAppointmentWhen", () => {

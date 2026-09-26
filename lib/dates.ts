@@ -116,3 +116,8 @@ export function formatRelativeDay(date: string, today: string = istToday()): str
 export function formatAppointmentWhen(instant: string, today: string = istToday()): string {
   return `${formatRelativeDay(istDateOf(instant), today)} · ${formatTime(instant)}`;
 }
+
+/** "Tue, 29 Sep" — always the actual date, for text read later (messages). */
+export function formatWeekdayDate(date: string, today: string = istToday()): string {
+  return `${WEEKDAYS[isoWeekday(date) - 1]}, ${formatShortDate(date, today)}`;
+}
