@@ -157,6 +157,36 @@ describe("record_visit", () => {
     expect(withdrawn.data).toEqual([{ id: firstId, status: "cancelled" }]);
   });
 
+  it("moves the case's upcoming appointment instead of booking a second one", async () => {
+    const { patientId, caseId } = await newCase(a.client, rct);
+    // Booked separately, e.g. at New Patient step 3.
+    const upcoming = await a.client
+      .from("appointment")
+      .insert({ patient_id: patientId, case_id: caseId, starts_at: inDays(3), duration_min: 30 })
+      .select("id")
+      .single();
+
+    const base = { p_case_id: caseId, p_stage_ids: [rct.stageIds[0]], p_next_stage_id: rct.stageIds[1] };
+
+    // Schedule later keeps an appointment the PG booked separately.
+    await record(a.client, { ...base, p_outcome: "complete" });
+    let appts = await a.client.from("appointment").select("id, status").eq("case_id", caseId);
+    expect(appts.data).toEqual([{ id: upcoming.data!.id, status: "scheduled" }]);
+
+    // Confirm & schedule moves it (same row), rather than adding another.
+    await record(a.client, {
+      ...base,
+      p_outcome: "complete",
+      p_next_appointment_id: randomUUID(),
+      p_next_starts_at: inDays(5),
+      p_next_duration_min: 60,
+    });
+    appts = await a.client.from("appointment").select("id, status, duration_min").eq("case_id", caseId);
+    expect(appts.data).toEqual([{ id: upcoming.data!.id, status: "scheduled", duration_min: 60 }]);
+    const [visit] = await visitsToday(a.client, caseId);
+    expect(visit!.next_appointment_id).toBe(upcoming.data!.id);
+  });
+
   it("completes a case, cancels treatment visits still to come, and can book a review", async () => {
     const { patientId, caseId } = await newCase(a.client, rct);
     const leftover = await a.client
