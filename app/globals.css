@@ -1,0 +1,461 @@
+@import "tailwindcss";
+
+/*
+ * OraMedha Lite — design tokens.
+ *
+ * Copied from the main OraMedha app (docs/oramedha-design/app/globals.css) so
+ * Lite looks like part of the same family. Removed: dental-chart, heatmap,
+ * KPI, Business Brain and print sections, which Lite does not use. Added at
+ * the bottom: the mobile rules from docs/design-system.md (safe areas, 44px
+ * touch floor, bottom-nav height).
+ *
+ * Rule: components use token utilities only (bg-surface, text-text-primary,
+ * bg-accent…). A new token goes here, in BOTH the light and the dark block.
+ */
+
+/* ── Tailwind v4 theme extension ───────────────────────────────────────────── */
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* Surface hierarchy — a very subtle warm grey-green tint separates the page
+     from the white content sitting on top of it, instead of pure white on
+     pure white everywhere. */
+  --color-background: #F6F8F6;
+  --color-surface: #FFFFFF;
+  --color-surface-secondary: #FAFCFA;
+  --color-surface-muted: #EEF2F0;
+  --color-border: #E3E9E6;
+  --color-border-strong: #CBD5D0;
+
+  /* Text ramp, darkest to lightest. */
+  --color-text-primary: #151918;
+  --color-text-strong: #333B36;
+  --color-text-body: #5B635E;
+  --color-text-secondary: #737A76;
+  --color-text-disabled: #6E766F;
+
+  /* Pressed state for neutral (secondary) buttons, and the modal scrim. */
+  --color-surface-pressed: #D8E0DB;
+  --color-scrim: #0B0F0E;
+
+  /* Emerald is the brand accent — used sparingly for primary actions, active
+     states and selected options. Never a background wash. */
+  --color-accent: #0D6B5E;
+  --color-accent-hover: #09544B;
+  --color-accent-foreground: #FFFFFF;
+  --color-accent-soft: #E8F4F0;
+  --color-accent-soft-border: #CFE7E0;
+  --color-accent-tint: #E8F4F0;
+  --color-accent-tint-hover: #DCEEE8;
+  --color-accent-border: #CFE7E0;
+  --color-accent-subtle-bg: #F6FBF9;
+  --color-accent-active: #084A42;
+
+  /* Foreground colours for text sitting ON a filled status chip or button.
+     Light mode fills are dark, so they take white. Dark mode fills are LIGHT,
+     so they take dark ink. */
+  --color-success-foreground: #FFFFFF;
+  --color-warning-foreground: #FFFFFF;
+  --color-danger-foreground: #FFFFFF;
+  --color-info-foreground: #FFFFFF;
+
+  --color-success: #16A34A;
+  --color-success-bg: #F0FDF4;
+  --color-success-border: #BBF7D0;
+  --color-success-strong: #166534;
+  --color-success-hover: #15803D;
+  --color-warning: #B45309;
+  --color-warning-bg: #FFFBEB;
+  --color-warning-border: #FDE68A;
+  --color-warning-strong: #854D0E;
+  --color-danger: #DC2626;
+  --color-danger-bg: #FEF2F2;
+  --color-danger-border: #FECACA;
+  --color-danger-hover: #B91C1C;
+  --color-danger-active: #9F1414;
+  --color-info: #2563EB;
+  --color-info-bg: #EFF6FF;
+  --color-info-border: #BFDBFE;
+  --color-info-strong: #1E40AF;
+
+  /* Chart series — kept for the Progress screen's bars (a later slice). */
+  --color-chart-1: #0D6B5E;
+  --color-chart-2: #2563EB;
+  --color-chart-3: #B45309;
+  --color-chart-4: #7C3AED;
+  --color-chart-grid: #E3E9E6;
+  --color-chart-axis: #737A76;
+
+  --radius-sm: 6px;
+  --radius-DEFAULT: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Restrained elevation — a soft, low-opacity shadow rather than a floating
+     "glowing card" look. Charcoal-tinted, not pure black. */
+  --shadow-xs: 0 1px 2px rgba(21, 25, 24, 0.04);
+  --shadow-sm: 0 1px 2px rgba(21, 25, 24, 0.04), 0 1px 3px rgba(21, 25, 24, 0.03);
+  --shadow-DEFAULT: 0 2px 6px -2px rgba(21, 25, 24, 0.06), 0 1px 2px rgba(21, 25, 24, 0.04);
+  --shadow-md: 0 6px 16px -4px rgba(21, 25, 24, 0.08), 0 2px 6px -2px rgba(21, 25, 24, 0.05);
+  --shadow-lg: 0 12px 28px -8px rgba(21, 25, 24, 0.12), 0 4px 10px -4px rgba(21, 25, 24, 0.06);
+  --shadow-xl: 0 20px 44px -12px rgba(21, 25, 24, 0.16), 0 8px 16px -6px rgba(21, 25, 24, 0.08);
+
+  /* ── Lite: mobile layout sizes ─────────────────────────────────────────── */
+  /* Height of the bottom navigation bar, excluding the safe-area inset. */
+  --spacing-nav: 4rem;
+  /* Height of the top app bar. */
+  --spacing-appbar: 3.5rem;
+}
+
+/* ── Legacy var() aliases ────────────────────────────────────────────────────
+ * For code that reads custom properties directly (inline `style` props, rules
+ * in this stylesheet). They POINT AT the @theme variables above, so a colour
+ * is defined in exactly one place and `.dark` only overrides that place.
+ * ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --background: var(--color-background);
+  --surface: var(--color-surface);
+  --surface-raised: var(--color-surface);
+  --surface-secondary: var(--color-surface-secondary);
+  --surface-muted: var(--color-surface-muted);
+  --surface-pressed: var(--color-surface-pressed);
+  --scrim: var(--color-scrim);
+
+  --text-primary: var(--color-text-primary);
+  --text-strong: var(--color-text-strong);
+  --text-body: var(--color-text-body);
+  --text-secondary: var(--color-text-secondary);
+  --text-disabled: var(--color-text-disabled);
+
+  --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
+
+  --accent: var(--color-accent);
+  --accent-hover: var(--color-accent-hover);
+  --accent-active: var(--color-accent-active);
+  --accent-foreground: var(--color-accent-foreground);
+  --accent-soft: var(--color-accent-soft);
+  --accent-soft-border: var(--color-accent-soft-border);
+
+  --radius: 8px;
+
+  /* Skeleton shimmer stops — overridden wholesale in dark. */
+  --skeleton-base: var(--color-surface-muted);
+  --skeleton-sheen: var(--color-border);
+
+  --scrollbar-thumb: var(--color-border-strong);
+  --scrollbar-thumb-hover: var(--color-text-disabled);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * DARK THEME
+ *
+ * Every colour resolves through the `--color-*` custom properties declared in
+ * the @theme block above. Redefining them here re-themes the whole app without
+ * a single `dark:` variant in a component.
+ *
+ * NOT the light palette inverted — values were derived by measuring WCAG
+ * contrast for every pairing the main app uses:
+ *  - The primary button's emerald is LIGHTER than light mode's and carries
+ *    DARK ink. White on emerald measured 3.16:1.
+ *  - `surface-muted` sits lighter than the card in dark (depth is luminance).
+ *  - Status `-bg` values are deep desaturated tints, never light pastels.
+ *
+ * The class is applied to <html> before first paint by THEME_INIT_SCRIPT
+ * (lib/theme/script.ts) and maintained thereafter by ThemeProvider.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* `dark:` follows the class the provider sets, not the OS setting, because
+   the PG can pick Light / Dark / System explicitly. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  color-scheme: dark;
+
+  /* ── Surfaces: a four-step luminance ladder ───────────────────────────── */
+  --color-background: #0F1412;
+  --color-surface: #151C19;
+  --color-surface-secondary: #1B2421;
+  --color-surface-muted: #202A26;
+  --color-surface-pressed: #26312C;
+
+  --color-border: #2C3733;
+  --color-border-strong: #5F766C;
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --color-text-primary: #F1F5F3;
+  --color-text-strong: #DCE4E0;
+  --color-text-body: #C2CCC8;
+  --color-text-secondary: #A5B0AB;
+  /* Used for muted METADATA (timestamps, placeholders), not only disabled
+     controls, so it must clear 4.5:1 on every surface. */
+  --color-text-disabled: #86938D;
+
+  /* ── Emerald accent ───────────────────────────────────────────────────── */
+  --color-accent: #35A18F;
+  --color-accent-hover: #45B5A2;
+  --color-accent-active: #2A8274;
+  --color-accent-foreground: #0F1412;
+  --color-accent-soft: #122E29;
+  --color-accent-soft-border: #2F6559;
+  --color-accent-tint: #122E29;
+  --color-accent-tint-hover: #16332E;
+  --color-accent-border: #2F6559;
+  --color-accent-subtle-bg: #101F1C;
+
+  /* ── Status ───────────────────────────────────────────────────────────── */
+  --color-success-foreground: #0F1412;
+  --color-warning-foreground: #0F1412;
+  --color-danger-foreground: #0F1412;
+  --color-info-foreground: #0F1412;
+
+  --color-success: #43C97A;
+  --color-success-bg: #163628;
+  --color-success-border: #2C6E4F;
+  --color-success-strong: #7FDBA4;
+  --color-success-hover: #5FD68F;
+
+  --color-warning: #E0A63F;
+  --color-warning-bg: #3B2E17;
+  --color-warning-border: #775E24;
+  --color-warning-strong: #EFC176;
+
+  --color-danger: #EF7B76;
+  --color-danger-bg: #402725;
+  --color-danger-border: #84463F;
+  --color-danger-hover: #F59892;
+  --color-danger-active: #FAB2AD;
+
+  --color-info: #6BA6F0;
+  --color-info-bg: #1F3050;
+  --color-info-border: #345F94;
+  --color-info-strong: #9CC4F6;
+
+  /* The scrim covers the page, so it goes to pure black. */
+  --color-scrim: #000000;
+
+  /* ── Charts ───────────────────────────────────────────────────────────── */
+  --color-chart-1: #3FB3A0;
+  --color-chart-2: #CFAE54;
+  --color-chart-3: #5786B7;
+  --color-chart-4: #DF9FD3;
+  --color-chart-grid: #242F2B;
+  --color-chart-axis: #A5B0AB;
+
+  /* ── Values with no --color-* counterpart ─────────────────────────────── */
+  --surface-raised: #1B2421;
+
+  --skeleton-base: #1E2723;
+  --skeleton-sheen: #2A3531;
+
+  --scrollbar-thumb: #3E4C46;
+  --scrollbar-thumb-hover: #5F766C;
+
+  /* Elevation is carried by the surface ladder; shadow only grounds it. */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.32), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.48), 0 2px 6px -2px rgba(0, 0, 0, 0.34);
+  --shadow-lg: 0 12px 28px -8px rgba(0, 0, 0, 0.56), 0 4px 10px -4px rgba(0, 0, 0, 0.38);
+  --shadow-xl: 0 20px 44px -12px rgba(0, 0, 0, 0.60), 0 8px 16px -6px rgba(0, 0, 0, 0.40);
+}
+
+.dark ::selection {
+  background: var(--color-accent-tint-hover);
+  color: var(--color-text-primary);
+}
+
+/* Colour transitions are suppressed for one frame while the theme class flips,
+   so the page switches cleanly instead of smearing between palettes. */
+[data-theme-switching] *,
+[data-theme-switching] *::before,
+[data-theme-switching] *::after {
+  transition: none !important;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  /* Tailwind's ring-offset colour defaults to white, which paints a white halo
+     around every focused control on a dark page. */
+  --tw-ring-offset-color: var(--color-background);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Lite: no grey flash box on every tap in mobile Safari/Chrome. Pressed
+     states come from the components' own active: styles instead. */
+  -webkit-tap-highlight-color: transparent;
+  /* Stop iOS from enlarging text on rotate. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  line-height: 1.6;
+  font-synthesis: none;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Hides the scrollbar while keeping the element scrollable — for horizontally
+   scrolling chip rows on mobile. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Focus + selection ────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ── Animations ───────────────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.25s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease forwards;
+}
+
+/* Lite: bottom sheets slide up from the thumb zone. */
+@keyframes sheetUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.animate-sheet-up {
+  animation: sheetUp 0.22s ease-out forwards;
+}
+
+/* ── Smooth disclosure ────────────────────────────────────────────────────── */
+.disclosure {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms ease;
+}
+.disclosure[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.disclosure > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Skeleton shimmer ─────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-sheen) 50%,
+    var(--skeleton-base) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * LITE — MOBILE RULES (docs/design-system.md → "What changes for Lite")
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Safe areas. `viewport-fit=cover` (set in app/layout.tsx) lets the app draw
+   under the notch and home indicator; these utilities keep content out of
+   them. Use `pb-safe` on anything pinned to the bottom of the screen. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+/* Space the page content must leave for the fixed bottom nav. */
+@utility pb-nav {
+  padding-bottom: calc(var(--spacing-nav) + env(safe-area-inset-bottom));
+}
+/* Space for a pinned primary action sitting above the bottom nav. */
+@utility pb-nav-action {
+  padding-bottom: calc(var(--spacing-nav) + 5rem + env(safe-area-inset-bottom));
+}
+
+/* Touch target floor. On a touch screen every input, select and button is at
+   least 44px tall (Apple HIG / WCAG 2.5.5), whatever size a component asked
+   for. Mouse users keep the compact density. Checkboxes and radios are
+   excluded — their tap area comes from the row they sit in. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select,
+  button:not([data-compact]) {
+    min-height: 2.75rem;
+  }
+}
