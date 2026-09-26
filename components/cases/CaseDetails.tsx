@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { CASE_STATUS_LABELS, CASE_STATUS_VARIANTS } from "@/lib/cases/status";
 import type { CaseSummary } from "@/lib/data/cases";
+import { SpecialCaseToggle } from "@/components/progress/SpecialCaseToggle";
 
 function Item({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -12,7 +13,7 @@ function Item({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-/** Tooth, case type, current stage and status — the case at a glance. */
+/** Tooth, case type, current stage and status — the case at a glance — and the special-case flag. */
 export function CaseDetails({ kase }: { kase: CaseSummary }) {
   return (
     <Card className="p-4">
@@ -27,6 +28,9 @@ export function CaseDetails({ kase }: { kase: CaseSummary }) {
           </dd>
         </div>
       </dl>
+      <div className="mt-4 border-t border-border pt-3">
+        <SpecialCaseToggle key={kase.caseId} caseId={kase.caseId} initial={kase.isSpecial} />
+      </div>
     </Card>
   );
 }

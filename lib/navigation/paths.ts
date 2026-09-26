@@ -62,3 +62,12 @@ export function bookedPath(patientId: string, appointmentId: string, opts: { res
 export function reschedulePath(patientId: string, appointmentId: string): string {
   return `/patients/${patientId}/appointments/${appointmentId}/reschedule`;
 }
+
+/** The logbook, optionally already filtered (the same query the exports take). */
+export const LOGBOOK_PATH = "/progress/logbook";
+export function logbookPath(query: Record<string, string | null | undefined> = {}): string {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(query)) if (v) params.set(k, v);
+  const q = params.toString();
+  return `${LOGBOOK_PATH}${q ? `?${q}` : ""}`;
+}

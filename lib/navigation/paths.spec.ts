@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   backHrefFor,
   bookedPath,
+  logbookPath,
   reschedulePath,
   fileContentPath,
   filesPath,
@@ -66,5 +67,14 @@ describe("appointment paths", () => {
   it("visitPath and visitUpdatedPath take an earlier date", () => {
     expect(visitPath("p1", "c1", { date: "2026-09-25" })).toBe("/patients/p1/cases/c1/visit?date=2026-09-25");
     expect(visitUpdatedPath("p1", "c1", { date: "2026-09-25" })).toBe("/patients/p1/cases/c1/visit/updated?date=2026-09-25");
+  });
+});
+
+describe("logbookPath", () => {
+  it("adds only the filters that are set", () => {
+    expect(logbookPath()).toBe("/progress/logbook");
+    expect(logbookPath({ caseType: "ct1", period: "custom", from: "2026-09-01", to: null })).toBe(
+      "/progress/logbook?caseType=ct1&period=custom&from=2026-09-01",
+    );
   });
 });

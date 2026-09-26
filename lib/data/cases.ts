@@ -21,6 +21,8 @@ export type CaseSummary = {
   patientOpdNumber: string | null;
   tooth: string | null;
   status: CaseStatus;
+  /** Flagged by the PG as a special case (counted separately on Progress). */
+  isSpecial: boolean;
   startedOn: string;
   caseTypeId: string;
   caseTypeName: string;
@@ -60,6 +62,7 @@ export function toCaseSummary(row: CaseOverviewRow): CaseSummary {
     patientOpdNumber: row.patient_opd_number,
     tooth: row.tooth,
     status: isCaseStatus(status) ? status : "ongoing",
+    isSpecial: row.is_special ?? false,
     startedOn: required(row.started_on, "started_on"),
     caseTypeId: required(row.case_type_id, "case_type_id"),
     caseTypeName: required(row.case_type_name, "case_type_name"),

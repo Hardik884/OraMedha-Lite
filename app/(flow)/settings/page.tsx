@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarOff, ChevronRight, Clock, SlidersHorizontal, Timer } from "lucide-react";
+import { CalendarOff, ChevronRight, Clock, SlidersHorizontal, Target, Timer } from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { PatientAvatar } from "@/components/shared/PatientAvatar";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -9,6 +9,7 @@ import { ReminderPicker } from "@/components/settings/ReminderPicker";
 import { SignOutButton } from "@/components/settings/SignOutButton";
 import { requirePg } from "@/lib/pg/require";
 import { getBlockedTimes, getModifierDefaults, getPreferences, getStageDefaults } from "@/lib/data/settings";
+import { getTargets } from "@/lib/data/progress";
 import { summarizeWorkingHours } from "@/lib/settings/working-hours";
 import { isCurrentBlock } from "@/lib/settings/blocked";
 import { formatIndianMobile } from "@/lib/auth/phone";
@@ -21,12 +22,14 @@ function plural(n: number, one: string, many: string) {
 
 export default async function SettingsPage() {
   const pg = await requirePg();
-  const [prefs, blocks, stageDefaults, modifiers] = await Promise.all([
+  const [prefs, blocks, stageDefaults, modifiers, targets] = await Promise.all([
     getPreferences(),
     getBlockedTimes(),
     getStageDefaults(pg.specialty.id),
     getModifierDefaults(pg.specialty.id),
+    getTargets(),
   ]);
+  const targetCount = Object.keys(targets).length;
 
   const now = new Date();
   const currentBlocks = blocks.filter((b) => isCurrentBlock(b, now)).length;
@@ -92,6 +95,17 @@ export default async function SettingsPage() {
                     ? "Using template defaults"
                     : `${plural(changedModifiers, "rule", "rules")} changed by you`
               }
+            />
+          </ul>
+        </SettingsGroup>
+
+        <SettingsGroup title="Progress">
+          <ul className="divide-y divide-border">
+            <SettingsRow
+              href="/settings/targets"
+              icon={Target}
+              title="Targets"
+              summary={targetCount === 0 ? "None set" : `${plural(targetCount, "case type", "case types")} with a target`}
             />
           </ul>
         </SettingsGroup>
