@@ -26,6 +26,7 @@ export type Database = {
           patient_informed_at: string | null
           pg_id: string
           planned_stage_id: string | null
+          purpose: string
           rescheduled_from_id: string | null
           starts_at: string
           status: string
@@ -43,6 +44,7 @@ export type Database = {
           patient_informed_at?: string | null
           pg_id?: string
           planned_stage_id?: string | null
+          purpose?: string
           rescheduled_from_id?: string | null
           starts_at: string
           status?: string
@@ -60,6 +62,7 @@ export type Database = {
           patient_informed_at?: string | null
           pg_id?: string
           planned_stage_id?: string | null
+          purpose?: string
           rescheduled_from_id?: string | null
           starts_at?: string
           status?: string
@@ -655,6 +658,8 @@ export type Database = {
           gap_max_days: number | null
           gap_min_days: number | null
           id: string
+          partial_gap_max_days: number | null
+          partial_gap_min_days: number | null
           pg_id: string
           stage_id: string
           updated_at: string
@@ -665,6 +670,8 @@ export type Database = {
           gap_max_days?: number | null
           gap_min_days?: number | null
           id?: string
+          partial_gap_max_days?: number | null
+          partial_gap_min_days?: number | null
           pg_id?: string
           stage_id: string
           updated_at?: string
@@ -675,6 +682,8 @@ export type Database = {
           gap_max_days?: number | null
           gap_min_days?: number | null
           id?: string
+          partial_gap_max_days?: number | null
+          partial_gap_min_days?: number | null
           pg_id?: string
           stage_id?: string
           updated_at?: string
@@ -743,6 +752,8 @@ export type Database = {
           name: string
           next_stage_on_complete_id: string | null
           next_stage_on_partial_id: string | null
+          partial_gap_max_days: number | null
+          partial_gap_min_days: number | null
           sort_order: number
         }
         Insert: {
@@ -757,6 +768,8 @@ export type Database = {
           name: string
           next_stage_on_complete_id?: string | null
           next_stage_on_partial_id?: string | null
+          partial_gap_max_days?: number | null
+          partial_gap_min_days?: number | null
           sort_order: number
         }
         Update: {
@@ -771,6 +784,8 @@ export type Database = {
           name?: string
           next_stage_on_complete_id?: string | null
           next_stage_on_partial_id?: string | null
+          partial_gap_max_days?: number | null
+          partial_gap_min_days?: number | null
           sort_order?: number
         }
         Relationships: [
@@ -812,8 +827,11 @@ export type Database = {
           deleted_at: string | null
           id: string
           modifier_id: string | null
+          next_appointment_id: string | null
           next_stage_id: string | null
           note: string | null
+          other_work: string | null
+          outcome: string | null
           pg_id: string
           updated_at: string
           visit_date: string
@@ -825,8 +843,11 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           modifier_id?: string | null
+          next_appointment_id?: string | null
           next_stage_id?: string | null
           note?: string | null
+          other_work?: string | null
+          outcome?: string | null
           pg_id?: string
           updated_at?: string
           visit_date?: string
@@ -838,8 +859,11 @@ export type Database = {
           deleted_at?: string | null
           id?: string
           modifier_id?: string | null
+          next_appointment_id?: string | null
           next_stage_id?: string | null
           note?: string | null
+          other_work?: string | null
+          outcome?: string | null
           pg_id?: string
           updated_at?: string
           visit_date?: string
@@ -879,6 +903,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "modifier"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_next_appointment_same_pg"
+            columns: ["next_appointment_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "appointment"
+            referencedColumns: ["id", "pg_id"]
+          },
+          {
+            foreignKeyName: "visit_next_appointment_same_pg"
+            columns: ["next_appointment_id", "pg_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_overview"
+            referencedColumns: ["appointment_id", "pg_id"]
           },
           {
             foreignKeyName: "visit_next_stage_id_fkey"
@@ -976,6 +1014,7 @@ export type Database = {
           patient_id: string | null
           patient_name: string | null
           pg_id: string | null
+          purpose: string | null
           stage_name: string | null
           starts_at: string | null
           status: string | null
@@ -1025,6 +1064,7 @@ export type Database = {
           next_appointment_at: string | null
           next_appointment_duration_min: number | null
           next_appointment_id: string | null
+          next_appointment_purpose: string | null
           next_appointment_status: string | null
           patient_age: number | null
           patient_id: string | null
@@ -1074,6 +1114,23 @@ export type Database = {
         Returns: string
       }
       ist_today: { Args: never; Returns: string }
+      record_visit: {
+        Args: {
+          p_case_id: string
+          p_complete_case: boolean
+          p_modifier_id?: string
+          p_new_visit_id: string
+          p_next_appointment_id?: string
+          p_next_duration_min?: number
+          p_next_stage_id?: string
+          p_next_starts_at?: string
+          p_note?: string
+          p_other_work?: string
+          p_outcome: string
+          p_stage_ids: string[]
+        }
+        Returns: Json
+      }
       start_case: {
         Args: {
           p_case_id: string
