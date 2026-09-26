@@ -1,0 +1,7 @@
+-- OraMedha Lite — local seed data.
+--
+-- Runs after every `supabase db reset` (see [db.seed] in config.toml).
+-- Empty in Slice 0: there are no tables yet. Slice 1 adds the procedure
+-- templates here (specialty → case type → stages). All clinical values
+-- (durations, gaps, next steps) seeded here must be marked as placeholders
+-- until confirmed with PGs.
