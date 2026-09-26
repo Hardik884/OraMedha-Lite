@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
 
   /*
+   * The logbook export libraries read their own font/data files at run time,
+   * so they're loaded from node_modules rather than bundled.
+   */
+  serverExternalPackages: ["pdfkit", "exceljs"],
+
+  /*
    * Lets `npm run dev:phone` be opened from a phone on the same Wi-Fi
    * (http://192.168.x.x:3000). Without it Next.js treats the phone as a
    * cross-origin client and can refuse dev assets and hot reload.
