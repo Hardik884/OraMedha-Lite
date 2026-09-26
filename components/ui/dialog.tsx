@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,9 @@ interface DialogProps {
  *   - From `sm` up it is the main app's centred modal.
  *   - Focus trap + focus restoration, Escape and backdrop to close (disabled
  *     while `busy`), body scroll lock.
+ *   - Rendered into <body> (a portal), so a sheet opened from inside a page's
+ *     <form> is not part of that form: Enter in the sheet, or any button in
+ *     it, can never submit the page's form by accident.
  */
 export function Dialog({
   open,
@@ -111,7 +115,7 @@ export function Dialog({
 
   if (!open) return null;
 
-  return (
+  const dialog = (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
       role="dialog"
@@ -180,4 +184,6 @@ export function Dialog({
       </div>
     </div>
   );
+
+  return typeof document === "undefined" ? dialog : createPortal(dialog, document.body);
 }

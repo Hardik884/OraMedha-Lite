@@ -51,6 +51,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     className,
     children,
     disabled,
+    type,
     ...props
   }, ref) => {
     const Comp = asChild ? Slot : "button";
@@ -58,6 +59,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
+        // Lite: a plain button unless it says type="submit". The browser's
+        // default is "submit", so an Edit or Pick button inside a form would
+        // otherwise save the form. Links (asChild) get no type at all.
+        type={asChild ? undefined : (type ?? "button")}
         disabled={disabled || isLoading}
         aria-busy={isLoading || undefined}
         className={cn(
