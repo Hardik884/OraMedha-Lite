@@ -22,6 +22,7 @@ export function StageDefaults({ caseTypes }: { caseTypes: CaseTypeDefaults[] }) 
               template: s.template,
               override: s.override,
               gapEditable: s.gapEditable,
+              partialEditable: true,
             }))}
             onSave={(stageId, values) => saveStageOverride({ stageId, values })}
             onReset={resetStageOverride}

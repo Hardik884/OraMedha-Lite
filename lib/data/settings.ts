@@ -67,12 +67,14 @@ export async function getStageDefaults(specialtyId: string): Promise<CaseTypeDef
     supabase
       .from("case_type")
       .select(
-        "id, name, stage!stage_case_type_id_fkey (id, name, sort_order, default_duration_min, default_gap_min_days, default_gap_max_days)",
+        "id, name, stage!stage_case_type_id_fkey (id, name, sort_order, default_duration_min, default_gap_min_days, default_gap_max_days, partial_gap_min_days, partial_gap_max_days)",
       )
       .eq("specialty_id", specialtyId)
       .eq("is_active", true)
       .order("sort_order"),
-    supabase.from("pg_stage_override").select("stage_id, duration_min, gap_min_days, gap_max_days"),
+    supabase
+      .from("pg_stage_override")
+      .select("stage_id, duration_min, gap_min_days, gap_max_days, partial_gap_min_days, partial_gap_max_days"),
   ]);
   if (caseTypes.error) throw new Error(`Could not load templates: ${caseTypes.error.code}`);
   if (overrides.error) throw new Error(`Could not load overrides: ${overrides.error.code}`);
@@ -92,9 +94,17 @@ export async function getStageDefaults(specialtyId: string): Promise<CaseTypeDef
             durationMin: s.default_duration_min,
             gapMinDays: s.default_gap_min_days,
             gapMaxDays: s.default_gap_max_days,
+            partialGapMinDays: s.partial_gap_min_days,
+            partialGapMaxDays: s.partial_gap_max_days,
           },
           override: o
-            ? { durationMin: o.duration_min, gapMinDays: o.gap_min_days, gapMaxDays: o.gap_max_days }
+            ? {
+                durationMin: o.duration_min,
+                gapMinDays: o.gap_min_days,
+                gapMaxDays: o.gap_max_days,
+                partialGapMinDays: o.partial_gap_min_days,
+                partialGapMaxDays: o.partial_gap_max_days,
+              }
             : null,
           gapEditable: s.default_gap_min_days !== null,
         };

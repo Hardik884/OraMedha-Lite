@@ -124,7 +124,7 @@ async function stageTemplate(stageId: string): Promise<TemplateValues | null> {
   const supabase = await createServerClient();
   const { data } = await supabase
     .from("stage")
-    .select("default_duration_min, default_gap_min_days, default_gap_max_days")
+    .select("default_duration_min, default_gap_min_days, default_gap_max_days, partial_gap_min_days, partial_gap_max_days")
     .eq("id", stageId)
     .maybeSingle();
   return data
@@ -132,6 +132,8 @@ async function stageTemplate(stageId: string): Promise<TemplateValues | null> {
         durationMin: data.default_duration_min,
         gapMinDays: data.default_gap_min_days,
         gapMaxDays: data.default_gap_max_days,
+        partialGapMinDays: data.partial_gap_min_days,
+        partialGapMaxDays: data.partial_gap_max_days,
       }
     : null;
 }
@@ -144,7 +146,7 @@ export async function saveStageOverride(input: {
   const template = await stageTemplate(input.stageId);
   if (!template) return { formError: SAVE_FAILED };
 
-  const result = validateOverride(input.values, template, template.gapMinDays !== null);
+  const result = validateOverride(input.values, template, template.gapMinDays !== null, true);
   if (!result.ok) return { errors: result.errors };
   if (result.isReset) return resetStageOverride(input.stageId);
 
@@ -157,6 +159,8 @@ export async function saveStageOverride(input: {
       duration_min: result.value.durationMin,
       gap_min_days: result.value.gapMinDays,
       gap_max_days: result.value.gapMaxDays,
+      partial_gap_min_days: result.value.partialGapMinDays ?? null,
+      partial_gap_max_days: result.value.partialGapMaxDays ?? null,
     },
     { onConflict: "pg_id,stage_id" },
   );

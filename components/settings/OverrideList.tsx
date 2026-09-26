@@ -33,6 +33,8 @@ export type OverrideItem = {
   template: TemplateValues;
   override: OverrideValues | null;
   gapEditable: boolean;
+  /** Stages may have their own gap after a Partial visit; modifiers don't. */
+  partialEditable?: boolean;
   /** Label when the template has no duration of its own (modifiers). */
   durationFallback?: string;
 };
@@ -84,7 +86,8 @@ export function OverrideList({ items, ...handlers }: { items: OverrideItem[] } &
         <ul className="divide-y divide-border">
           {items.map((item) => {
             const eff = effectiveValues(item.template, item.override);
-            const custom = eff.customDuration || eff.customGap;
+            const custom = eff.customDuration || eff.customGap || eff.customPartialGap;
+            const hasPartial = eff.partialGapMinDays !== null;
             return (
               <li key={item.id} className="flex items-center gap-1 pr-2">
                 <button
@@ -115,7 +118,19 @@ export function OverrideList({ items, ...handlers }: { items: OverrideItem[] } &
                       templateValue={describeGap(item.template.gapMinDays, item.template.gapMaxDays)}
                     />
                   ) : (
-                    <span className="block text-sm text-text-secondary">Last stage — no next visit</span>
+                    <span className="block text-sm text-text-secondary">Last stage — no next stage</span>
+                  )}
+                  {item.partialEditable && hasPartial && (
+                    <ValueLine
+                      label="After a partial visit"
+                      value={describeGap(eff.partialGapMinDays, eff.partialGapMaxDays)}
+                      custom={eff.customPartialGap}
+                      templateValue={
+                        item.template.partialGapMinDays != null
+                          ? describeGap(item.template.partialGapMinDays, item.template.partialGapMaxDays)
+                          : "same as usual"
+                      }
+                    />
                   )}
                 </button>
                 {custom ? (
@@ -160,6 +175,8 @@ function OverrideEditor({ item, onClose, onSave, onReset }: { item: OverrideItem
     durationMin: eff.durationMin?.toString() ?? "",
     gapMinDays: eff.gapMinDays?.toString() ?? "",
     gapMaxDays: eff.gapMaxDays?.toString() ?? "",
+    partialGapMinDays: eff.partialGapMinDays?.toString() ?? "",
+    partialGapMaxDays: eff.partialGapMaxDays?.toString() ?? "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof OverrideInput, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -253,6 +270,38 @@ function OverrideEditor({ item, onClose, onSave, onReset }: { item: OverrideItem
             </div>
             <p className="text-xs text-text-secondary">
               Template: {describeGap(t.gapMinDays, t.gapMaxDays)}. Leave both empty to follow the template.
+            </p>
+          </div>
+        )}
+
+        {item.partialEditable && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-text-primary">After a partial visit (days, optional)</p>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Earliest" htmlFor="ov-pgap-min" error={errors.partialGapMinDays}>
+                <Input
+                  id="ov-pgap-min"
+                  inputMode="numeric"
+                  placeholder={t.partialGapMinDays?.toString() ?? ""}
+                  value={values.partialGapMinDays}
+                  onChange={(e) => set("partialGapMinDays", e.target.value)}
+                  hasError={Boolean(errors.partialGapMinDays)}
+                />
+              </Field>
+              <Field label="Latest" htmlFor="ov-pgap-max" error={errors.partialGapMaxDays}>
+                <Input
+                  id="ov-pgap-max"
+                  inputMode="numeric"
+                  placeholder={t.partialGapMaxDays?.toString() ?? ""}
+                  value={values.partialGapMaxDays}
+                  onChange={(e) => set("partialGapMaxDays", e.target.value)}
+                  hasError={Boolean(errors.partialGapMaxDays)}
+                />
+              </Field>
+            </div>
+            <p className="text-xs text-text-secondary">
+              When this stage isn&apos;t finished in one visit. Leave both empty to use{" "}
+              {t.partialGapMinDays != null ? `the template (${describeGap(t.partialGapMinDays, t.partialGapMaxDays)})` : "the usual gap"}.
             </p>
           </div>
         )}
