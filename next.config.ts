@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
    */
   serverExternalPackages: ["pdfkit", "exceljs"],
 
+  /* The PDF export's font files, read at run time — include them in the server output. */
+  outputFileTracingIncludes: {
+    "/api/logbook/export": ["./assets/fonts/**"],
+  },
+
   /*
    * Lets `npm run dev:phone` be opened from a phone on the same Wi-Fi
    * (http://192.168.x.x:3000). Without it Next.js treats the phone as a
