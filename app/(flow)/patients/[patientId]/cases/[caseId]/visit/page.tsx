@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { UpdateVisitFlow } from "@/components/visits/UpdateVisitFlow";
 import { getVisitContext } from "@/lib/data/visit";
 import { getSchedulingData } from "@/lib/data/scheduling";
+import { getCaseFiles } from "@/lib/data/files";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
 import { patientPath } from "@/lib/navigation/paths";
@@ -18,7 +19,11 @@ export default async function UpdateVisitPage({
   const { patientId, caseId } = await params;
   if (!isUuid(patientId) || !isUuid(caseId)) notFound();
 
-  const [ctx, scheduling] = await Promise.all([getVisitContext(caseId), getSchedulingData()]);
+  const [ctx, scheduling, files] = await Promise.all([
+    getVisitContext(caseId),
+    getSchedulingData(),
+    getCaseFiles(caseId),
+  ]);
   if (!ctx || ctx.kase.patientId !== patientId) notFound();
 
   const { kase } = ctx;
@@ -37,6 +42,7 @@ export default async function UpdateVisitPage({
       todayVisit={ctx.todayVisit}
       todaysAppointmentAt={ctx.todaysAppointment?.startsAt ?? null}
       upcomingAppointment={ctx.upcomingAppointment}
+      todayFiles={ctx.todayVisit ? files.filter((f) => f.visitId === ctx.todayVisit!.id) : []}
       backHref={patientPath(patientId, { caseId })}
     />
   );

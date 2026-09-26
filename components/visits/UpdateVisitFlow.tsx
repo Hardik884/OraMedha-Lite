@@ -36,6 +36,8 @@ import {
 } from "@/lib/engine/next-step";
 import { validateVisit } from "@/lib/visits/validate";
 import type { TodayVisit } from "@/lib/data/visit";
+import type { CaseFile } from "@/lib/data/files";
+import { VisitFiles } from "@/components/files/VisitFiles";
 import { recordVisit, type RecordVisitResult } from "@/app/(flow)/patients/visit-actions";
 
 const OTHER = "__other__";
@@ -79,6 +81,7 @@ export function UpdateVisitFlow({
   todayVisit,
   todaysAppointmentAt,
   upcomingAppointment,
+  todayFiles,
   backHref,
 }: {
   patientId: string;
@@ -96,6 +99,8 @@ export function UpdateVisitFlow({
   todayVisit: TodayVisit | null;
   todaysAppointmentAt: string | null;
   upcomingAppointment: { id: string; startsAt: string } | null;
+  /** Files already filed under today's visit (when editing it). */
+  todayFiles: CaseFile[];
   backHref: string;
 }) {
   const isEdit = todayVisit?.outcome != null;
@@ -134,8 +139,16 @@ export function UpdateVisitFlow({
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  // Made once and reused on every retry (see recordVisit).
+  // Made once and reused on every retry (see recordVisit). Files added
+  // before the visit is saved are tied to the same visit id.
   const ids = useRef<{ visitId: string; appointmentId: string } | null>(null);
+  const [fileVisitId, setFileVisitId] = useState<string | null>(todayVisit?.id ?? null);
+  function visitIdForFiles(): string {
+    if (todayVisit) return todayVisit.id;
+    ids.current ??= { visitId: newId(), appointmentId: newId() };
+    setFileVisitId(ids.current.visitId);
+    return ids.current.visitId;
+  }
 
   const stageById = useMemo(() => new Map(template.stages.map((s) => [s.id, s])), [template]);
 
@@ -371,6 +384,22 @@ export function UpdateVisitFlow({
               className="min-h-[80px]"
             />
           </Field>
+
+          <VisitFiles
+            target={{
+              caseId,
+              patientId,
+              visitId: visitIdForFiles,
+              // Today's stages first as one-tap labels, then the rest of the template.
+              stageNames: [
+                ...template.stages.filter((st) => stageIds.includes(st.id)),
+                ...template.stages.filter((st) => !stageIds.includes(st.id)),
+              ].map((st) => st.name),
+            }}
+            visitId={fileVisitId}
+            savedFiles={todayFiles}
+            today={today}
+          />
 
           <BottomActions>
             <Button type="submit" size="xl" block>

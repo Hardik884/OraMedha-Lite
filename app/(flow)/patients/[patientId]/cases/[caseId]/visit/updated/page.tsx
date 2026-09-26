@@ -6,6 +6,8 @@ import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getVisitContext } from "@/lib/data/visit";
+import { getVisitFileIds } from "@/lib/data/files";
+import { VisitFilesRow } from "@/components/files/VisitFilesRow";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
 import { formatAppointmentWhen } from "@/lib/dates";
@@ -54,10 +56,13 @@ export default async function VisitUpdatedPage({
   const worked = [...visit.stageIds]
     .sort((a, b) => (template.stages.find((s) => s.id === a)?.sortOrder ?? 0) - (template.stages.find((s) => s.id === b)?.sortOrder ?? 0))
     .map(stageName);
+  // Files are filed under the furthest stage worked on (see the case_files migration).
+  const filedUnder = worked.length > 0 ? worked[worked.length - 1]! : null;
   if (visit.otherWork) worked.push(visit.otherWork);
   const modifier = template.modifiers.find((m) => m.id === visit.modifierId);
   const completed = kase.status === "completed";
   const next = visit.nextAppointment && visit.nextAppointment.status !== "cancelled" ? visit.nextAppointment : null;
+  const fileIds = await getVisitFileIds(visit.id);
 
   return (
     <main className="mx-auto max-w-lg px-4 pt-safe pb-44">
@@ -84,6 +89,13 @@ export default async function VisitUpdatedPage({
             }`}
           />
           <Row icon={History} title="Case timeline updated" />
+          <VisitFilesRow
+            patientId={patientId}
+            caseId={caseId}
+            visitId={visit.id}
+            savedIds={fileIds}
+            stageName={filedUnder ? `Filed under ${filedUnder}` : null}
+          />
           {visit.completedAppointment && (
             <Row
               icon={CalendarCheck}

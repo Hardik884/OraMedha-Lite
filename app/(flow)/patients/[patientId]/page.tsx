@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ClipboardPen, FolderOpen, MessageCircle, Phone, Stethoscope } from "lucide-react";
+import { ClipboardPen, MessageCircle, Phone, Stethoscope } from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
@@ -11,15 +11,18 @@ import { CaseSwitcher } from "@/components/cases/CaseSwitcher";
 import { CaseDetails } from "@/components/cases/CaseDetails";
 import { NextAppointmentCard } from "@/components/cases/NextAppointmentCard";
 import { CaseTimeline } from "@/components/cases/CaseTimeline";
+import { FilesPreview } from "@/components/files/FilesPreview";
 import { getPatient } from "@/lib/data/patients";
 import { getCasesForPatient, getCaseVisits } from "@/lib/data/cases";
+import { getCaseFiles } from "@/lib/data/files";
+import { getStageNames } from "@/lib/data/templates";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
 import { istToday } from "@/lib/dates";
-import { buildTimeline } from "@/lib/cases/timeline";
+import { attachFiles, buildTimeline } from "@/lib/cases/timeline";
 import { formatIndianMobile } from "@/lib/auth/phone";
 import { telHref, whatsappHref } from "@/lib/contact/links";
-import { backHrefFor, newCasePath, schedulePath, visitPath, type BackTo } from "@/lib/navigation/paths";
+import { backHrefFor, filesPath, newCasePath, schedulePath, visitPath, type BackTo } from "@/lib/navigation/paths";
 
 export const metadata: Metadata = { title: "Patient" };
 
@@ -54,7 +57,13 @@ export default async function PatientPage({
 
   const from: BackTo | undefined = fromParam === "today" || fromParam === "patients" ? fromParam : undefined;
   const selected = cases.find((c) => c.caseId === caseParam) ?? cases[0] ?? null;
-  const visits = selected ? await getCaseVisits(selected.caseId) : [];
+  const [visits, files, stageNames] = selected
+    ? await Promise.all([
+        getCaseVisits(selected.caseId),
+        getCaseFiles(selected.caseId),
+        getStageNames(selected.caseTypeId, selected.status === "ongoing" ? selected.currentStageName : null),
+      ])
+    : [[], [], []];
   const today = istToday();
 
   const meta = [
@@ -103,22 +112,20 @@ export default async function PatientPage({
 
             <Section title="Case timeline">
               <CaseTimeline
-                items={buildTimeline(visits, selected.startedOn, today)}
+                items={attachFiles(buildTimeline(visits, selected.startedOn, today), files)}
                 today={today}
                 editHref={visitPath(patient.id, selected.caseId)}
+                fileHref={(fileId) => filesPath(patient.id, selected.caseId, { fileId })}
               />
             </Section>
 
-            <Section title="Files">
-              <Card className="flex items-center gap-3 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-text-secondary">
-                  <FolderOpen className="h-5 w-5" aria-hidden />
-                </div>
-                <p className="text-sm text-text-secondary">
-                  X-rays, photos and documents for this case will be kept here.
-                </p>
-              </Card>
-            </Section>
+            <FilesPreview
+              patientId={patient.id}
+              caseId={selected.caseId}
+              files={files}
+              today={today}
+              stageNames={stageNames}
+            />
           </>
         )}
       </main>
