@@ -80,6 +80,7 @@ export function ScheduleForm({
           date: slot.value?.date ?? "",
           time: slot.value?.time ?? "",
           durationMin,
+          isNew,
         });
       } catch {
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };

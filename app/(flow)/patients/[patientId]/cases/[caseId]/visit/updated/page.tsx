@@ -10,7 +10,11 @@ import { getVisitFileIds } from "@/lib/data/files";
 import { VisitFilesRow } from "@/components/files/VisitFilesRow";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
-import { formatAppointmentWhen } from "@/lib/dates";
+import { formatAppointmentWhen, formatWeekdayDate, isIsoDate } from "@/lib/dates";
+import { getAppointment } from "@/lib/data/appointments";
+import { getPreferences } from "@/lib/data/settings";
+import { toManaged } from "@/lib/appointments/managed";
+import { SendMessageButton } from "@/components/messages/SendMessageButton";
 import { formatDuration } from "@/lib/scheduling/defaults";
 import { patientPath, schedulePath, visitPath } from "@/lib/navigation/paths";
 
@@ -38,14 +42,18 @@ function Row({ icon: Icon, title, detail }: { icon: LucideIcon; title: string; d
  */
 export default async function VisitUpdatedPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ patientId: string; caseId: string }>;
+  searchParams: Promise<{ date?: string }>;
 }) {
-  await requirePg();
+  const pg = await requirePg();
   const { patientId, caseId } = await params;
+  const { date } = await searchParams;
   if (!isUuid(patientId) || !isUuid(caseId)) notFound();
+  const visitDate = date && isIsoDate(date) ? date : undefined;
 
-  const ctx = await getVisitContext(caseId);
+  const ctx = await getVisitContext(caseId, visitDate);
   if (!ctx || ctx.kase.patientId !== patientId) notFound();
   const visit = ctx.todayVisit;
   // Nothing recorded today (e.g. opened from history): go back to the case.
@@ -62,7 +70,14 @@ export default async function VisitUpdatedPage({
   const modifier = template.modifiers.find((m) => m.id === visit.modifierId);
   const completed = kase.status === "completed";
   const next = visit.nextAppointment && visit.nextAppointment.status !== "cancelled" ? visit.nextAppointment : null;
-  const fileIds = await getVisitFileIds(visit.id);
+  const now = new Date();
+  const { reminderTiming } = await getPreferences();
+  const [fileIds, nextAppt] = await Promise.all([
+    getVisitFileIds(visit.id),
+    next ? getAppointment(next.id, { timing: reminderTiming, now }) : Promise.resolve(null),
+  ]);
+  const managedNext = nextAppt ? toManaged(nextAppt, pg, now) : null;
+  const isPastDay = ctx.visitDate !== today;
 
   return (
     <main className="mx-auto max-w-lg px-4 pt-safe pb-44">
@@ -83,7 +98,7 @@ export default async function VisitUpdatedPage({
         <ul className="divide-y divide-border">
           <Row
             icon={ClipboardList}
-            title="Today's visit recorded"
+            title={isPastDay ? `Visit of ${formatWeekdayDate(ctx.visitDate, today)} recorded` : "Today's visit recorded"}
             detail={`${worked.join(" + ")} · ${visit.outcome === "complete" ? "Complete" : "Partial"}${
               modifier ? ` · ${modifier.label}` : ""
             }`}
@@ -99,7 +114,7 @@ export default async function VisitUpdatedPage({
           {visit.completedAppointment && (
             <Row
               icon={CalendarCheck}
-              title="Today's appointment marked completed"
+              title={isPastDay ? "The appointment marked completed" : "Today's appointment marked completed"}
               detail={formatAppointmentWhen(visit.completedAppointment.startsAt, today)}
             />
           )}
@@ -130,6 +145,15 @@ export default async function VisitUpdatedPage({
         </ul>
       </Card>
 
+      {managedNext && Date.parse(managedNext.startsAt) > now.getTime() && (
+        <div className="mt-6 space-y-2">
+          <p className="text-sm text-text-body">
+            Tell {kase.patientName} about the {next?.purpose === "review" ? "review visit" : "next appointment"}.
+          </p>
+          <SendMessageButton draft={managedNext.drafts.booked} openedAt={managedNext.opened.booked} />
+        </div>
+      )}
+
       <BottomActions>
         <Button asChild size="xl" block>
           <Link href="/today">Done</Link>
@@ -144,7 +168,7 @@ export default async function VisitUpdatedPage({
             </Button>
           ) : (
             <Button asChild variant="outline" size="lg">
-              <Link href={visitPath(patientId, caseId)}>Edit visit</Link>
+              <Link href={visitPath(patientId, caseId, { date: isPastDay ? ctx.visitDate : undefined })}>Edit visit</Link>
             </Button>
           )}
         </div>

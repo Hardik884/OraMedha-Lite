@@ -6,7 +6,7 @@ import { FileTile, UploadTile } from "./FileTiles";
 import { useCaseUploads } from "./useCaseUploads";
 
 /**
- * "Files from today" inside Update Visit: add X-rays, photos or documents
+ * "Files from this visit" inside Update Visit: add X-rays, photos or documents
  * while recording the visit. They upload in the background and are filed
  * under this visit and its stage once the visit is saved.
  */
@@ -31,7 +31,7 @@ export function VisitFiles({
 
   return (
     <section className="space-y-2.5">
-      <h2 className="text-base font-semibold text-text-primary">Files from today (optional)</h2>
+      <h2 className="text-base font-semibold text-text-primary">Files from this visit (optional)</h2>
       {uploads.length + savedFiles.length > 0 && (
         <ul className="grid grid-cols-3 gap-x-3 gap-y-4">
           {uploads.map((u) => (

@@ -16,6 +16,9 @@ import { getPatient } from "@/lib/data/patients";
 import { getCasesForPatient, getCaseVisits } from "@/lib/data/cases";
 import { getCaseFiles } from "@/lib/data/files";
 import { getStageNames } from "@/lib/data/templates";
+import { getAppointment } from "@/lib/data/appointments";
+import { getPreferences } from "@/lib/data/settings";
+import { toManaged } from "@/lib/appointments/managed";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
 import { istToday } from "@/lib/dates";
@@ -47,7 +50,7 @@ export default async function PatientPage({
   params: Promise<{ patientId: string }>;
   searchParams: Promise<{ case?: string; from?: string }>;
 }) {
-  await requirePg();
+  const pg = await requirePg();
   const { patientId } = await params;
   const { case: caseParam, from: fromParam } = await searchParams;
   if (!isUuid(patientId)) notFound();
@@ -64,7 +67,19 @@ export default async function PatientPage({
         getStageNames(selected.caseTypeId, selected.status === "ongoing" ? selected.currentStageName : null),
       ])
     : [[], [], []];
-  const today = istToday();
+  const now = new Date();
+  const today = istToday(now);
+
+  // The next appointment (to manage), or the last one when it was missed or
+  // cancelled and nothing is booked since.
+  const { reminderTiming } = await getPreferences();
+  const clock = { timing: reminderTiming, now };
+  const lastNeedsReschedule =
+    selected && !selected.nextAppointment && (selected.lastAppointment?.status === "missed" || selected.lastAppointment?.status === "cancelled");
+  const [nextAppt, lastAppt] = await Promise.all([
+    selected?.nextAppointment ? getAppointment(selected.nextAppointment.id, clock) : Promise.resolve(null),
+    lastNeedsReschedule ? getAppointment(selected!.lastAppointment!.id, clock) : Promise.resolve(null),
+  ]);
 
   const meta = [
     patient.age !== null ? `Age ${patient.age}` : null,
@@ -106,8 +121,11 @@ export default async function PatientPage({
 
             <NextAppointmentCard
               kase={selected}
+              next={nextAppt ? toManaged(nextAppt, pg, now) : null}
+              last={lastAppt ? toManaged(lastAppt, pg, now) : null}
               scheduleHref={schedulePath(patient.id, selected.caseId)}
               today={today}
+              nowIso={now.toISOString()}
             />
 
             <Section title="Case timeline">

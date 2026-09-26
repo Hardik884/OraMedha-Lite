@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState, useTransition } from "react";
-import { AlertTriangle, ArrowRight, CircleCheck, Info, Pencil } from "lucide-react";
+import { AlertTriangle, ArrowRight, CircleCheck, History, Info, Pencil } from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import { MultiChoiceList } from "@/components/ui/multi-choice-list";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { newId } from "@/lib/ids";
-import { formatAppointmentWhen, formatRelativeDay, isIsoDate, isTime } from "@/lib/dates";
+import { formatAppointmentWhen, formatRelativeDay, formatShortDate, formatWeekdayDate, isIsoDate, isTime } from "@/lib/dates";
 import { defaultNextVisit, durationOptions, formatDuration } from "@/lib/scheduling/defaults";
 import { windowFromGap } from "@/lib/scheduling/window";
 import { checkSlot, describeProblem } from "@/lib/scheduling/slot-finder";
@@ -77,6 +77,7 @@ export function UpdateVisitFlow({
   scheduling,
   nowIso,
   today,
+  visitDate = today,
   currentStageId,
   todayVisit,
   todaysAppointmentAt,
@@ -95,6 +96,8 @@ export function UpdateVisitFlow({
   /** "Now" as loaded on the server, so server and phone render the same slot. */
   nowIso: string;
   today: string;
+  /** The day being recorded: today, or up to 7 days back (a forgotten update). */
+  visitDate?: string;
   currentStageId: string | null;
   todayVisit: TodayVisit | null;
   todaysAppointmentAt: string | null;
@@ -163,7 +166,11 @@ export function UpdateVisitFlow({
   // visit booked, else the case's own upcoming one (see record_visit).
   const moving = bookedLive ? { id: booked!.id, startsAt: booked!.startsAt, ownBooking: true } : upcomingAppointment ? { ...upcomingAppointment, ownBooking: false } : null;
   const engineGap = suggestion?.kind === "next_visit" ? suggestion.gap : null;
-  const searchWindow = windowFromGap(today, engineGap, today);
+  // A visit recorded late counts its gap from the day it happened; the slot
+  // finder still never offers a time that has passed.
+  const searchWindow = windowFromGap(visitDate, engineGap, today);
+  const isPastDay = visitDate !== today;
+  const dayWord = isPastDay ? `on ${formatShortDate(visitDate, today)}` : "today";
   const slot = useSlotChoice({
     scheduling,
     window: searchWindow,
@@ -243,6 +250,7 @@ export function UpdateVisitFlow({
           caseId,
           visitId,
           appointmentId,
+          visitDate,
           visit: { stageIds, otherSelected, otherWork, outcome, note },
           modifierId: activeModifier || null,
           next:
@@ -280,23 +288,30 @@ export function UpdateVisitFlow({
       <>
         <FlowHeader backHref={backHref} title={title} subtitle={subtitle} />
         <form onSubmit={goToNext} method="post" noValidate className="mx-auto max-w-lg space-y-6 px-4 pt-5 pb-32">
+          {isPastDay && (
+            <p className="flex items-center gap-2 rounded-[10px] border border-warning-border bg-warning-bg px-3.5 py-3 text-sm text-warning">
+              <History className="h-4 w-4 shrink-0" aria-hidden />
+              Recording the visit of {formatWeekdayDate(visitDate, today)}, after the day.
+            </p>
+          )}
           {isEdit && (
             <p className="flex items-center gap-2 rounded-[10px] border border-info-border bg-info-bg px-3.5 py-3 text-sm text-info">
               <Pencil className="h-4 w-4 shrink-0" aria-hidden />
-              You&apos;re editing today&apos;s visit. Saving updates it — no second visit is added.
+              You&apos;re editing the visit {isPastDay ? `of ${formatShortDate(visitDate, today)}` : "from today"}. Saving updates it —
+              no second visit is added.
             </p>
           )}
           {!isEdit && todaysAppointmentAt && (
             <p className="text-sm text-text-secondary">
-              Today&apos;s appointment ({formatAppointmentWhen(todaysAppointmentAt, today)}) will be marked completed.
+              The appointment ({formatAppointmentWhen(todaysAppointmentAt, today)}) will be marked completed.
             </p>
           )}
 
           <section className="space-y-2.5">
-            <h1 className="text-xl font-semibold tracking-tight text-text-primary">1. What did you do today?</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-text-primary">1. What did you do {dayWord}?</h1>
             <p className="text-sm text-text-secondary">Tick every stage you worked on.</p>
             <MultiChoiceList
-              label="What did you do today?"
+              label={`What did you do ${dayWord}?`}
               values={picked}
               onChange={(v) => {
                 setPicked(v);
@@ -338,7 +353,7 @@ export function UpdateVisitFlow({
             <h2 className="text-xl font-semibold tracking-tight text-text-primary">2. How far did you get?</h2>
             {driving && stageIds.length > 1 && (
               <p className="text-sm text-text-secondary">
-                For {driving.name}, the furthest stage today. The others are recorded as complete.
+                For {driving.name}, the furthest stage {dayWord}. The others are recorded as complete.
               </p>
             )}
             <ChoiceList

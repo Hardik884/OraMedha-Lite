@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Check, ClipboardPen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AppointmentStatusBadge } from "@/components/shared/AppointmentStatusBadge";
+import { AppointmentActions } from "@/components/appointments/AppointmentActions";
+import type { ManagedAppointment } from "@/lib/appointments/managed";
 import { caseLabel } from "@/lib/cases/status";
 import { formatTime } from "@/lib/dates";
 import { patientPath, visitPath } from "@/lib/navigation/paths";
@@ -19,8 +20,20 @@ import type { AppointmentListItem } from "@/lib/data/appointments";
  *
  * Tapping the row opens the case; "Update" goes straight to Update Visit.
  * Once the visit is updated the button becomes a quiet "Updated" mark.
+ * Tapping the status chip opens the appointment's actions (confirm, missed,
+ * reschedule, cancel, WhatsApp).
  */
-export function AppointmentRow({ appointment: a }: { appointment: AppointmentListItem }) {
+export function AppointmentRow({
+  appointment: a,
+  managed,
+  nowIso,
+  today,
+}: {
+  appointment: AppointmentListItem;
+  managed: ManagedAppointment;
+  nowIso: string;
+  today: string;
+}) {
   const canUpdate = a.caseId && ["scheduled", "confirmed", "unconfirmed"].includes(a.status);
   const updated = a.caseId && a.status === "completed";
   const stageLine = a.purpose === "review" ? "Review visit" : a.stageName;
@@ -43,7 +56,7 @@ export function AppointmentRow({ appointment: a }: { appointment: AppointmentLis
         </span>
       </Link>
       <div className="flex shrink-0 flex-col items-end justify-start gap-2 py-3.5 pr-3">
-        <AppointmentStatusBadge status={a.status} />
+        <AppointmentActions appointment={managed} nowIso={nowIso} today={today} />
         {(canUpdate || updated) &&
           (canUpdate ? (
             <Button asChild variant="outline" size="lg" className="px-3">
