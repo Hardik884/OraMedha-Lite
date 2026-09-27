@@ -108,6 +108,7 @@ export function TimingsForm({ initial, initialSlotStep }: { initial: WorkingHour
                       <Input
                         type="time"
                         step={300}
+                        className="min-w-0 flex-1"
                         aria-label={`${long} session ${i + 1} starts`}
                         value={s.start}
                         onChange={(e) => setSession(day, i, "start", e.target.value)}
@@ -119,6 +120,7 @@ export function TimingsForm({ initial, initialSlotStep }: { initial: WorkingHour
                       <Input
                         type="time"
                         step={300}
+                        className="min-w-0 flex-1"
                         aria-label={`${long} session ${i + 1} ends`}
                         value={s.end}
                         onChange={(e) => setSession(day, i, "end", e.target.value)}
@@ -129,6 +131,7 @@ export function TimingsForm({ initial, initialSlotStep }: { initial: WorkingHour
                           type="button"
                           variant="ghost"
                           size="icon-lg"
+                          className="shrink-0"
                           aria-label={`Remove ${long} session ${i + 1}`}
                           onClick={() => update(day, sessions.filter((_, j) => j !== i))}
                         >

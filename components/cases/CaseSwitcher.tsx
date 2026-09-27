@@ -47,7 +47,7 @@ export function CaseSwitcher({
                 <span
                   className={cn(
                     "text-[11px] leading-tight",
-                    selected ? "text-accent-hover/80" : "text-text-secondary",
+                    selected ? "text-accent-hover" : "text-text-secondary",
                   )}
                 >
                   {CASE_STATUS_LABELS[c.status]}

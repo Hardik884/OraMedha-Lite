@@ -50,7 +50,7 @@ export function FeedbackForm({
       </p>
       {done && (
         <p
-          className="flex items-center gap-2 rounded-[10px] border border-success-border bg-success-bg px-3.5 py-3 text-sm text-success"
+          className="flex items-center gap-2 rounded-[10px] border border-success-border bg-success-bg px-3.5 py-3 text-sm text-success-strong"
           role="status"
         >
           <CircleCheck className="h-4 w-4 shrink-0" aria-hidden />

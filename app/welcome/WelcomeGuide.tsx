@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarCheck, CircleCheck, ClipboardPen, Sparkles, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,7 +35,6 @@ const STEPS: Step[] = [
 
 /** The first-run guide: skippable, shown once (and again from Settings). */
 export function WelcomeGuide({ firstName, doneHref }: { firstName: string; doneHref: string }) {
-  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [pending, startTransition] = useTransition();
   const step = STEPS[index]!;
@@ -47,7 +45,9 @@ export function WelcomeGuide({ firstName, doneHref }: { firstName: string; doneH
     startTransition(async () => {
       // Even if this fails (offline), let the PG in; they'd just see the guide once more.
       await markGuideSeen().catch(() => {});
-      router.replace(doneHref);
+      // A full load, not a client hop: the router may still hold the tabs'
+      // earlier "go to the guide" redirect, which would bounce back here.
+      window.location.replace(doneHref);
     });
   }
 

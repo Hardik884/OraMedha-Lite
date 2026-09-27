@@ -64,7 +64,7 @@ export function CaseTimeline({
                       {item.editable && editHref && item.status.label !== "In progress" && (
                         <Link
                           href={editHref}
-                          className="-mr-2 flex h-9 items-center gap-1 rounded-lg px-2 text-sm font-medium text-accent active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                          className="-mr-2 flex h-11 items-center gap-1 rounded-lg px-2 text-sm font-medium text-accent active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                         >
                           <Pencil className="h-3.5 w-3.5" aria-hidden />
                           Edit

@@ -140,14 +140,14 @@ export function UploadTile({ item }: { item: UploadItem }) {
             : STATUS_TEXT[item.status]}
       </p>
       {(failed || item.retryAt) && (
-        <div className="mt-1 flex gap-1">
+        <div className="mt-1.5 grid gap-1">
           {item.retryable && (
-            <Button size="sm" variant="outline" onClick={() => retryUpload(item.id)} aria-label="Retry upload">
+            <Button size="lg" block variant="outline" className="px-2" onClick={() => retryUpload(item.id)} aria-label="Retry upload">
               <RotateCw className="h-3.5 w-3.5" aria-hidden />
               Retry
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={() => removeUpload(item.id)} aria-label="Remove upload">
+          <Button size="lg" block variant="ghost" className="px-2" onClick={() => removeUpload(item.id)} aria-label="Remove upload">
             <X className="h-3.5 w-3.5" aria-hidden />
             Remove
           </Button>

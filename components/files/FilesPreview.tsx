@@ -42,7 +42,7 @@ export function FilesPreview({
         {files.length > 0 && (
           <Link
             href={filesPath(patientId, caseId)}
-            className="-mr-2 flex h-9 items-center gap-0.5 rounded-lg px-2 text-sm font-medium text-accent active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="-mr-2 flex h-11 items-center gap-0.5 rounded-lg px-2 text-sm font-medium text-accent active:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             View all
             <ChevronRight className="h-4 w-4" aria-hidden />

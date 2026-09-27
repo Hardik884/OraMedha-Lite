@@ -32,7 +32,9 @@
   --color-text-primary: #151918;
   --color-text-strong: #333B36;
   --color-text-body: #5B635E;
-  --color-text-secondary: #737A76;
+  /* Lite: a touch darker than the main app (#737A76) so secondary text meets
+     WCAG AA (4.5:1) on every light surface, including in bright OPD light. */
+  --color-text-secondary: #666D69;
   --color-text-disabled: #6E766F;
 
   /* Pressed state for neutral (secondary) buttons, and the modal scrim. */

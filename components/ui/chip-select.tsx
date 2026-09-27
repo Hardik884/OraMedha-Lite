@@ -42,7 +42,7 @@ export function ChipSelect<T extends string | number>({
           >
             <span className="leading-tight">{opt.label}</span>
             {opt.hint && (
-              <span className={cn("text-[11px] leading-tight", selected ? "text-accent-hover/80" : "text-text-secondary")}>
+              <span className={cn("text-[11px] leading-tight", selected ? "text-accent-hover" : "text-text-secondary")}>
                 {opt.hint}
               </span>
             )}

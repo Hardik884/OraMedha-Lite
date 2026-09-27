@@ -100,7 +100,7 @@ export default async function ProgressPage({
               <h2 id="by-case-type" className="text-sm font-semibold text-text-primary">
                 Completed cases
               </h2>
-              <Link href="/settings/targets?from=progress" className="flex h-9 items-center gap-1 rounded-lg px-2 text-sm font-medium text-accent">
+              <Link href="/settings/targets?from=progress" className="flex h-11 items-center gap-1 rounded-lg px-2 text-sm font-medium text-accent">
                 <Target className="h-4 w-4" aria-hidden />
                 Targets
               </Link>
@@ -168,7 +168,7 @@ export default async function ProgressPage({
               </h2>
               <Link
                 href={logbookPath()}
-                className="flex h-9 items-center gap-0.5 rounded-lg px-2 text-sm font-medium text-accent"
+                className="flex h-11 items-center gap-0.5 rounded-lg px-2 text-sm font-medium text-accent"
               >
                 View all
                 <ChevronRight className="h-4 w-4" aria-hidden />

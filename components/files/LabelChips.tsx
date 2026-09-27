@@ -25,7 +25,7 @@ export function LabelChips({
             aria-pressed={on}
             onClick={() => onChange(on ? "" : s)}
             className={cn(
-              "h-9 cursor-pointer rounded-full border px-3 text-sm transition-colors",
+              "h-10 cursor-pointer rounded-full border px-3.5 text-sm transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
               on
                 ? "border-accent-soft-border bg-accent-soft font-semibold text-accent-hover"

@@ -55,7 +55,7 @@ export default async function AppointmentPage({
   return (
     <main className="mx-auto max-w-lg px-4 pt-safe pb-44">
       <div className="flex flex-col items-center pt-10 pb-6 text-center">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-success-bg text-success">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-success-bg text-success-strong">
           <CalendarCheck className="h-9 w-9" aria-hidden />
         </span>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-text-primary">

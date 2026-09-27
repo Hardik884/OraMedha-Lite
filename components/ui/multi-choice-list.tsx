@@ -51,7 +51,7 @@ export function MultiChoiceList({
             <span className="min-w-0 flex-1">
               <span className="block text-base font-medium leading-snug">{opt.label}</span>
               {opt.description && (
-                <span className={cn("mt-0.5 block text-sm leading-snug", checked ? "text-accent-hover/80" : "text-text-secondary")}>
+                <span className={cn("mt-0.5 block text-sm leading-snug", checked ? "text-accent-hover" : "text-text-secondary")}>
                   {opt.description}
                 </span>
               )}

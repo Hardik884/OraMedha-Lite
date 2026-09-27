@@ -75,7 +75,7 @@ export function ChoiceList({
                 <span
                   className={cn(
                     "mt-0.5 block text-sm leading-snug",
-                    selected ? "text-accent-hover/80" : "text-text-secondary"
+                    selected ? "text-accent-hover" : "text-text-secondary"
                   )}
                 >
                   {opt.description}

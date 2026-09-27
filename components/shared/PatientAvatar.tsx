@@ -21,7 +21,7 @@ const SIZE_CLASSES = {
 const PALETTES = [
   "bg-surface-muted text-text-body",
   "bg-info-bg text-info",
-  "bg-success-bg text-success",
+  "bg-success-bg text-success-strong",
   "bg-warning-bg text-warning",
   "bg-danger-bg text-danger",
   "bg-accent-soft text-accent",

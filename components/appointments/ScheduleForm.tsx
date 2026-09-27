@@ -99,7 +99,7 @@ export function ScheduleForm({
       />
       <form onSubmit={submit} method="post" noValidate className="mx-auto max-w-lg space-y-5 px-4 pt-5 pb-44">
         {isNew && (
-          <p className="flex items-center gap-2 rounded-[10px] border border-success-border bg-success-bg px-3.5 py-3 text-sm text-success">
+          <p className="flex items-center gap-2 rounded-[10px] border border-success-border bg-success-bg px-3.5 py-3 text-sm text-success-strong">
             <CalendarCheck className="h-4 w-4 shrink-0" aria-hidden />
             Patient and today&apos;s visit saved.
           </p>
