@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { parseIndianMobile } from "@/lib/auth/phone";
+import { parseIndianMobile } from "@/lib/phone/india";
 import type { SamePhonePatient } from "@/lib/patients/duplicates";
 import { createServerClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/ids";

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { PatientAvatar } from "@/components/shared/PatientAvatar";
-import { formatIndianMobile } from "@/lib/auth/phone";
+import { formatIndianMobile } from "@/lib/phone/india";
 import { patientPath } from "@/lib/navigation/paths";
 import type { PatientListItem } from "@/lib/data/patients";
 

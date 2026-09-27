@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { parseIndianMobile } from "@/lib/auth/phone";
+import { parseIndianMobile } from "@/lib/phone/india";
 import { samePhoneHint, type SamePhonePatient } from "@/lib/patients/duplicates";
 import { patientPath } from "@/lib/navigation/paths";
 import { findPatientsWithPhone } from "@/app/(flow)/patients/actions";

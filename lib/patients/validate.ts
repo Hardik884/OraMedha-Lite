@@ -1,4 +1,4 @@
-import { parseIndianMobile } from "@/lib/auth/phone";
+import { parseIndianMobile } from "@/lib/phone/india";
 import { parseTeeth } from "@/lib/teeth/fdi";
 
 /**

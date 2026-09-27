@@ -23,7 +23,7 @@ import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
 import { istToday } from "@/lib/dates";
 import { attachFiles, buildTimeline } from "@/lib/cases/timeline";
-import { formatIndianMobile } from "@/lib/auth/phone";
+import { formatIndianMobile } from "@/lib/phone/india";
 import { telHref, whatsappHref } from "@/lib/contact/links";
 import { backHrefFor, filesPath, newCasePath, schedulePath, visitPath, type BackTo } from "@/lib/navigation/paths";
 

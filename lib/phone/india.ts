@@ -1,9 +1,9 @@
 /**
- * Indian mobile numbers for phone-OTP sign-in.
+ * Indian mobile numbers (patients' phones, for WhatsApp messages).
  *
- * PGs type numbers however they like — "98765 43210", "+91-98765-43210",
+ * People type numbers however they like — "98765 43210", "+91-98765-43210",
  * "09876543210" — so everything is normalised to 10 digits (what we show and
- * store) and E.164 (what Supabase Auth needs).
+ * store) and E.164.
  */
 export type PhoneParseResult =
   | { ok: true; national: string; e164: string }
@@ -30,12 +30,4 @@ export function parseIndianMobile(input: string): PhoneParseResult {
 /** "9876543210" → "98765 43210", the way people read numbers aloud. */
 export function formatIndianMobile(national: string): string {
   return /^\d{10}$/.test(national) ? `${national.slice(0, 5)} ${national.slice(5)}` : national;
-}
-
-/** Length of the SMS code (Supabase Auth `sms_otp_length`). */
-export const OTP_LENGTH = 6;
-
-/** Keeps only digits, capped at the code length — safe to call on every keystroke. */
-export function cleanOtp(input: string): string {
-  return input.replace(/\D/g, "").slice(0, OTP_LENGTH);
 }

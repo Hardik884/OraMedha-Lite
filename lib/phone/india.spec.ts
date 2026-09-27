@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanOtp, formatIndianMobile, parseIndianMobile } from "./phone";
+import { formatIndianMobile, parseIndianMobile } from "./india";
 
 describe("parseIndianMobile", () => {
   it.each([
@@ -43,12 +43,5 @@ describe("parseIndianMobile", () => {
 describe("formatIndianMobile", () => {
   it("splits 5 + 5", () => {
     expect(formatIndianMobile("9876543210")).toBe("98765 43210");
-  });
-});
-
-describe("cleanOtp", () => {
-  it("keeps digits only, up to 6", () => {
-    expect(cleanOtp("12 34-56789")).toBe("123456");
-    expect(cleanOtp("ab1")).toBe("1");
   });
 });
