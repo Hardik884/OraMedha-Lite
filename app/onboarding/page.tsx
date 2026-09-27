@@ -3,15 +3,16 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { getCurrentPg } from "@/lib/pg/current";
 import { createServerClient } from "@/lib/supabase/server";
-import { HOME_PATH, LOGIN_PATH } from "@/lib/auth/routes";
+import { LOGIN_PATH, safeNextPath } from "@/lib/auth/routes";
 import { OnboardingForm } from "./OnboardingForm";
 
 export const metadata: Metadata = { title: "Welcome" };
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const next = safeNextPath((await searchParams).next);
   const current = await getCurrentPg();
   if (current.state === "signed-out") redirect(LOGIN_PATH);
-  if (current.state === "ready") redirect(HOME_PATH);
+  if (current.state === "ready") redirect(next);
 
   // Specialties come from the procedure templates — nothing is hard-coded.
   const supabase = await createServerClient();
@@ -24,7 +25,7 @@ export default async function OnboardingPage() {
 
   return (
     <AuthShell title="Welcome to OraMedha Lite" subtitle="Three quick things, once.">
-      <OnboardingForm specialties={specialties ?? []} />
+      <OnboardingForm specialties={specialties ?? []} suggestedName={current.suggestedName} next={next} />
     </AuthShell>
   );
 }

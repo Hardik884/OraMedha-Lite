@@ -13,7 +13,7 @@ export const noSession = { auth: { persistSession: false, autoRefreshToken: fals
 /** A throwaway signed-in user on the LOCAL stack. */
 export async function signedInUser(label: string): Promise<{ client: Client; id: string }> {
   const admin = createClient<Database>(URL, SERVICE, noSession);
-  const email = `db-${label}-${randomUUID()}@test.local`;
+  const email = `db-${label}-${randomUUID()}@oramedha.test`;
   const password = `pw-${randomUUID()}`;
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error || !data.user) throw error ?? new Error("createUser failed");

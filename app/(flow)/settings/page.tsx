@@ -13,7 +13,6 @@ import { getTargets } from "@/lib/data/progress";
 import { settingsBackHref } from "@/lib/feedback/screen";
 import { summarizeWorkingHours } from "@/lib/settings/working-hours";
 import { isCurrentBlock } from "@/lib/settings/blocked";
-import { formatIndianMobile } from "@/lib/auth/phone";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -37,7 +36,6 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const currentBlocks = blocks.filter((b) => isCurrentBlock(b, now)).length;
   const changedStages = stageDefaults.flatMap((ct) => ct.stages).filter((s) => s.override).length;
   const changedModifiers = modifiers.filter((m) => m.override).length;
-  const national = pg.phone?.replace(/^\+?91/, "") ?? null;
 
   return (
     <>
@@ -54,9 +52,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <span className="block truncate text-sm text-text-secondary">
               {pg.specialty.name} · {pg.college}
             </span>
-            {national && (
-              <span className="block text-sm tabular-nums text-text-secondary">+91 {formatIndianMobile(national)}</span>
-            )}
+            {pg.email && <span className="block truncate text-sm text-text-secondary">{pg.email}</span>}
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-text-disabled" aria-hidden />
         </Link>

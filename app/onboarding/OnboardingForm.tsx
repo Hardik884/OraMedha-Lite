@@ -10,7 +10,19 @@ import { saveOnboarding, type OnboardingState } from "./actions";
 
 type FormField = "fullName" | "college" | "specialtyId";
 
-export function OnboardingForm({ specialties }: { specialties: { id: string; name: string }[] }) {
+/**
+ * Name (pre-filled from the Google account, still editable), college and
+ * specialty.
+ */
+export function OnboardingForm({
+  specialties,
+  suggestedName,
+  next,
+}: {
+  specialties: { id: string; name: string }[];
+  suggestedName: string;
+  next: string;
+}) {
   const [state, formAction, pending] = useActionState<OnboardingState, FormData>(
     saveOnboarding,
     {},
@@ -37,6 +49,7 @@ export function OnboardingForm({ specialties }: { specialties: { id: string; nam
 
   return (
     <form action={formAction} className="flex flex-1 flex-col gap-6" noValidate>
+      <input type="hidden" name="next" value={next} />
       <Field label="Your name" htmlFor="fullName" error={errorFor("fullName")}>
         <Input
           id="fullName"
@@ -44,7 +57,7 @@ export function OnboardingForm({ specialties }: { specialties: { id: string; nam
           autoComplete="name"
           autoCapitalize="words"
           placeholder="Dr Riya Singh"
-          defaultValue={state.values?.fullName}
+          defaultValue={state.values?.fullName ?? suggestedName}
           hasError={Boolean(errorFor("fullName"))}
           onChange={() => markEdited("fullName")}
         />

@@ -155,11 +155,15 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://localhost:3000"
+site_url = "http://localhost:3100"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://127.0.0.1:3000"]
+additional_redirect_urls = [
+  "http://localhost:3100/auth/callback",
+  "http://127.0.0.1:3100/auth/callback",
+  "http://localhost:3000/auth/callback",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -216,7 +220,9 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
+# LOCAL STACK ONLY: the local test sign-in (npm run dev:local) and the database
+# tests create throwaway users with email + password. On the hosted project the
+# Email provider is switched OFF in the dashboard; PGs use Google.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
@@ -254,22 +260,17 @@ otp_expiry = 3600
 # content_path = "./supabase/templates/password_changed_notification.html"
 
 [auth.sms]
-# Allow/disallow new user signups via SMS to your project.
-# LOCAL STACK ONLY. OraMedha Lite signs PGs in with phone OTP. The hosted
-# project's auth settings are managed in the Supabase dashboard, NOT pushed
-# from this file (never run `supabase config push` — it would overwrite them).
-enable_signup = true
+# LOCAL STACK ONLY — this file is never pushed to the hosted project (never
+# run `supabase config push`; the hosted project's auth settings live in the
+# Supabase dashboard). OraMedha Lite signs PGs in with Google; phone sign-in
+# is off. Locally, the test sign-in uses email + password (see [auth.email]).
+enable_signup = false
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = false
 # Template for sending OTP to users
 template = "Your code is {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
 max_frequency = "5s"
-
-# Use pre-defined map of phone number to OTP for testing.
-# Local test PG: sign in with 98765 43210 and code 123456. No SMS is sent.
-[auth.sms.test_otp]
-919876543210 = "123456"
 
 # Configure logged in session timeouts.
 # [auth.sessions]
@@ -289,14 +290,6 @@ max_frequency = "5s"
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
-[auth.sms.twilio]
-# Enabled with DUMMY values purely so the local phone provider switches on;
-# the test_otp number above never reaches Twilio. These are not credentials.
-enabled = true
-account_sid = "AC00000000000000000000000000000000"
-message_service_sid = "MG00000000000000000000000000000000"
-auth_token = "local-dummy-not-a-secret"
-
 # Multi-factor-authentication is available to Supabase Pro plan.
 [auth.mfa]
 # Control how many MFA factors can be enrolled at once per user.

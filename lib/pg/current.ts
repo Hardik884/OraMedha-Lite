@@ -1,10 +1,12 @@
 import "server-only";
 import { cache } from "react";
 import { createServerClient } from "@/lib/supabase/server";
+import { nameFromProfile } from "@/lib/onboarding/prefill";
 
 export type CurrentPg = {
   id: string;
-  phone: string | null;
+  /** The Google account's email, shown in Settings. */
+  email: string | null;
   fullName: string;
   college: string;
   specialty: { id: string; name: string };
@@ -19,7 +21,7 @@ export type CurrentPg = {
 export const getCurrentPg = cache(
   async (): Promise<
     | { state: "signed-out" }
-    | { state: "needs-onboarding"; userId: string }
+    | { state: "needs-onboarding"; userId: string; suggestedName: string }
     | { state: "ready"; pg: CurrentPg }
   > => {
     const supabase = await createServerClient();
@@ -35,13 +37,15 @@ export const getCurrentPg = cache(
       .maybeSingle();
 
     if (error) throw new Error(`Could not load PG profile: ${error.code}`);
-    if (!profile || !profile.specialty) return { state: "needs-onboarding", userId: user.id };
+    if (!profile || !profile.specialty) {
+      return { state: "needs-onboarding", userId: user.id, suggestedName: nameFromProfile(user.user_metadata) };
+    }
 
     return {
       state: "ready",
       pg: {
         id: profile.id,
-        phone: user.phone ?? null,
+        email: user.email ?? null,
         fullName: profile.full_name,
         college: profile.college,
         specialty: profile.specialty,

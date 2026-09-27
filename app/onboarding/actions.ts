@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { validateOnboarding, type OnboardingErrors } from "@/lib/onboarding/validate";
-import { HOME_PATH, LOGIN_PATH } from "@/lib/auth/routes";
+import { LOGIN_PATH, safeNextPath } from "@/lib/auth/routes";
 
 export type OnboardingState = {
   errors?: OnboardingErrors;
@@ -63,5 +63,7 @@ export async function saveOnboarding(
     return { formError: "Couldn't save. Check your internet and try again.", values };
   }
 
-  redirect(HOME_PATH);
+  // Where they were going before signing in, or Today (which shows the
+  // first-run guide once).
+  redirect(safeNextPath(typeof formData.get("next") === "string" ? String(formData.get("next")) : null));
 }
