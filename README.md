@@ -58,17 +58,19 @@ npm run db:stop
 
 **Local-only guard.** `test:db` and `dev:local` refuse to start unless the Supabase URL is localhost, and `dev:local` also makes every Supabase client in the app refuse a non-local URL — so test data can never be written to the hosted project. `dev:local` builds into `.next-local` so it never reuses a bundle compiled for the hosted project. Use plain `npm run dev` / `npm run dev:phone` for the hosted project.
 
-Local phone login: `98765 43210`, code `123456` (see `supabase/config.toml`; no SMS is sent).
+**Local test sign-in.** Google can't be automated, so on `npm run dev:local` the login screen also shows a yellow **Local test sign-in** box: any address ending in `.test` (e.g. `pg1@oramedha.test`) signs in as a throwaway test PG, created on first use (all test PGs share a local-only password, `local-test-only`, in `lib/auth/test-sign-in.ts`). It only exists when the app is the local test server **and** the Supabase URL is the local stack, and never in a production build — so it can't be switched on against the hosted project. The database tests (`npm run test:db`) create their own users the same way.
 
-## Phone login on the hosted project
+## Sign-in (Google)
 
-Phone OTP is switched on in the Supabase dashboard, not from this repo (never run `supabase config push`; it would overwrite the dashboard settings).
+PGs sign in with **Continue with Google** (Supabase Auth, Google provider, PKCE). Sign-up is open: any Google account can sign in, and a first sign-in goes to onboarding (name pre-filled from Google, then college and specialty).
 
-1. **Authentication → Sign In / Providers → Phone** → enable.
-2. SMS provider: choose **Twilio** and enter placeholder values (e.g. Account SID `AC00000000000000000000000000000000`, Auth Token `placeholder`, Message Service SID `MG00000000000000000000000000000000`). Real SMS needs a real provider later; test numbers never reach it.
-3. **Test phone numbers and OTPs**: add lines like `919876543210=123456` (country code, no `+`), one per tester. Set the expiry date in the future.
-4. Optionally raise **SMS OTP expiry** from 60 to 300 seconds.
-5. Save. Now sign in on the app with `98765 43210` and code `123456`.
+- The login button sends the PG to Google and back to **`/auth/callback`**, which finishes the sign-in and continues to onboarding, the page they were trying to open, or Today.
+- Inside WhatsApp, Instagram, Facebook and other in-app browsers Google refuses to sign anyone in, so the login screen shows **Open in Chrome / Safari** with a **Copy link** button instead.
+- Google and Supabase are set up by hand in their dashboards, not from this repo (never run `supabase config push`; it would overwrite the dashboard settings):
+  1. **Google Cloud Console:** a project, the OAuth consent screen (app name "OraMedha Lite", scopes `email`, `profile`, `openid` only, **published** "In production" so any Google account can sign in), and a **Web application** OAuth client whose *Authorized redirect URI* is `https://<project-ref>.supabase.co/auth/v1/callback`.
+  2. **Supabase → Authentication → Sign In / Providers:** Google on (client ID and secret from step 1); Phone and Email off.
+  3. **Supabase → Authentication → URL Configuration:** Site URL = the deployed address; Redirect URLs = `http://localhost:3000/**`, `http://<laptop-wifi-ip>:3000/**` and `https://<deployed-address>/**`.
+- Testing on a phone over Wi-Fi (`npm run dev:phone`) needs that Wi-Fi address in the Redirect URLs. If the laptop's address changes, add the new one.
 
 ## Procedure templates
 
@@ -82,7 +84,7 @@ All clinical knowledge (specialties, case types, stages, durations, gaps, next s
 | `app/dev/ui/` | Hidden component gallery |
 | `components/ui/` | Design-system components (from the OraMedha kit, sized for phones) |
 | `components/shared/` | Logo, theme toggle, avatars, status chips, segmented tabs |
-| `app/login`, `app/onboarding` | Phone OTP sign-in and first-login onboarding |
+| `app/login`, `app/auth/callback`, `app/onboarding` | Google sign-in, its callback, and first-login onboarding |
 | `lib/` | Business logic (pure functions + tests) and Supabase clients |
 | `supabase/` | CLI config, migrations (schema, RLS, templates) |
 | `test/db/` | Database specs run against the local stack (`npm run test:db`) |
