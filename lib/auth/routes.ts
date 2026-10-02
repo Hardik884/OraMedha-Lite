@@ -10,9 +10,14 @@ export const HOME_PATH = "/today";
 export const WELCOME_PATH = "/welcome";
 /** Where Google (via Supabase Auth) sends the PG back with a one-time code. */
 export const AUTH_CALLBACK_PATH = "/auth/callback";
+/** Where links in our emails (confirm email, reset password) land. */
+export const AUTH_CONFIRM_PATH = "/auth/confirm";
+export const FORGOT_PASSWORD_PATH = "/forgot-password";
+/** Signed in (a reset link signs the PG in): choose a new password. */
+export const SET_PASSWORD_PATH = "/set-password";
 
 /** Reachable without signing in. None of these show patient data. */
-const PUBLIC_PATHS = [LOGIN_PATH, "/auth", "/privacy", "/terms", "/offline", "/dev/ui"];
+const PUBLIC_PATHS = [LOGIN_PATH, FORGOT_PASSWORD_PATH, "/auth", "/privacy", "/terms", "/offline", "/dev/ui"];
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -27,6 +32,7 @@ export function safeNextPath(next: string | null | undefined): string {
     return HOME_PATH;
   }
   if (next === LOGIN_PATH || next.startsWith(`${LOGIN_PATH}?`)) return HOME_PATH;
+  if (next === FORGOT_PASSWORD_PATH || next.startsWith(`${FORGOT_PASSWORD_PATH}?`)) return HOME_PATH;
   if (next.startsWith("/auth/") || next === "/auth") return HOME_PATH;
   return next;
 }

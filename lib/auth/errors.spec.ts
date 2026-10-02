@@ -57,7 +57,7 @@ describe("sign-in error codes", () => {
   });
 
   it("has a sentence for each", () => {
-    for (const code of ["cancelled", "browser", "closed", "failed"] as const) {
+    for (const code of ["cancelled", "browser", "closed", "link", "failed"] as const) {
       expect(signInErrorMessage(code).length).toBeGreaterThan(10);
     }
   });

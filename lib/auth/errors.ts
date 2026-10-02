@@ -28,9 +28,9 @@ export function friendlyAuthError(message: string | undefined): string {
  * PG in (`/login?error=…`). Short codes, so no provider text ever lands in
  * the address bar or browser history.
  */
-export type SignInErrorCode = "cancelled" | "browser" | "closed" | "failed";
+export type SignInErrorCode = "cancelled" | "browser" | "closed" | "link" | "failed";
 
-const SIGN_IN_ERROR_CODES: readonly SignInErrorCode[] = ["cancelled", "browser", "closed", "failed"];
+const SIGN_IN_ERROR_CODES: readonly SignInErrorCode[] = ["cancelled", "browser", "closed", "link", "failed"];
 
 export function isSignInErrorCode(value: unknown): value is SignInErrorCode {
   return typeof value === "string" && (SIGN_IN_ERROR_CODES as readonly string[]).includes(value);
@@ -60,6 +60,8 @@ export function signInErrorMessage(code: SignInErrorCode): string {
       return "Sign-in has to finish in the same browser it started in. Tap Continue with Google again.";
     case "closed":
       return "New sign-ups are closed right now. Please contact the OraMedha team.";
+    case "link":
+      return "That email link has expired or was already used. Sign in, or ask for a new link.";
     case "failed":
       return "Couldn't finish signing in. Please try again.";
   }

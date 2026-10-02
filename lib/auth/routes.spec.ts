@@ -9,9 +9,11 @@ import {
 } from "./routes";
 
 describe("isPublicPath", () => {
-  it("allows login, the sign-in callback, privacy, terms, offline and the UI kit", () => {
+  it("allows login, forgot password, the auth callbacks, privacy, terms, offline and the UI kit", () => {
     expect(isPublicPath("/login")).toBe(true);
     expect(isPublicPath("/auth/callback")).toBe(true);
+    expect(isPublicPath("/forgot-password")).toBe(true);
+    expect(isPublicPath("/auth/confirm")).toBe(true);
     expect(isPublicPath("/privacy")).toBe(true);
     expect(isPublicPath("/terms")).toBe(true);
     expect(isPublicPath("/offline")).toBe(true);
@@ -21,6 +23,7 @@ describe("isPublicPath", () => {
   it("protects everything else", () => {
     expect(isPublicPath("/today")).toBe(false);
     expect(isPublicPath("/onboarding")).toBe(false);
+    expect(isPublicPath("/set-password")).toBe(false);
     expect(isPublicPath("/loginx")).toBe(false);
     expect(isPublicPath("/authx")).toBe(false);
   });
@@ -39,6 +42,7 @@ describe("safeNextPath", () => {
     "/\\evil.example",
     "/login",
     "/auth/callback?code=x",
+    "/forgot-password",
   ])("falls back to Today for %s", (next) => {
     expect(safeNextPath(next)).toBe("/today");
   });
