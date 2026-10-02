@@ -9,9 +9,11 @@ import {
 } from "./routes";
 
 describe("isPublicPath", () => {
-  it("allows login, the sign-in callback, offline and the UI kit", () => {
+  it("allows login, the sign-in callback, privacy, terms, offline and the UI kit", () => {
     expect(isPublicPath("/login")).toBe(true);
     expect(isPublicPath("/auth/callback")).toBe(true);
+    expect(isPublicPath("/privacy")).toBe(true);
+    expect(isPublicPath("/terms")).toBe(true);
     expect(isPublicPath("/offline")).toBe(true);
     expect(isPublicPath("/dev/ui")).toBe(true);
   });

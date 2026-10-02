@@ -12,7 +12,7 @@ export const WELCOME_PATH = "/welcome";
 export const AUTH_CALLBACK_PATH = "/auth/callback";
 
 /** Reachable without signing in. None of these show patient data. */
-const PUBLIC_PATHS = [LOGIN_PATH, "/auth", "/offline", "/dev/ui"];
+const PUBLIC_PATHS = [LOGIN_PATH, "/auth", "/privacy", "/terms", "/offline", "/dev/ui"];
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

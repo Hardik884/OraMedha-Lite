@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { AuthShell } from "@/components/layout/AuthShell";
+import { LegalLinks } from "@/components/layout/LegalPage";
 import { isSignInErrorCode, signInErrorMessage } from "@/lib/auth/errors";
 import { detectInAppBrowser } from "@/lib/auth/in-app-browser";
 import { safeNextPath } from "@/lib/auth/routes";
@@ -41,6 +42,7 @@ export default async function LoginPage({
         <GoogleSignIn next={safeNext} initialError={errorText} />
       )}
       {testSignInEnabled() && <TestSignIn next={safeNext} />}
+      <LegalLinks className="mt-4" />
     </AuthShell>
   );
 }

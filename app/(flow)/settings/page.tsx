@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarOff, ChevronRight, Clock, Compass, MessageSquareText, SlidersHorizontal, Target, Timer } from "lucide-react";
+import {
+  CalendarOff,
+  ChevronRight,
+  Clock,
+  Compass,
+  FileText,
+  MessageSquareText,
+  ShieldCheck,
+  SlidersHorizontal,
+  Target,
+  Timer,
+} from "lucide-react";
 import { FlowHeader } from "@/components/layout/FlowHeader";
 import { PatientAvatar } from "@/components/shared/PatientAvatar";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
@@ -127,6 +138,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               title="Send feedback"
               summary="Tell us what's confusing, missing or broken"
             />
+            <SettingsRow href="/privacy" icon={ShieldCheck} title="Privacy policy" summary="What the app keeps, and who sees it" />
+            <SettingsRow href="/terms" icon={FileText} title="Terms of service" />
           </ul>
         </SettingsGroup>
 
