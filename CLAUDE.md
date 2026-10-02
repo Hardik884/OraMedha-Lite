@@ -39,7 +39,7 @@ Seed data for v0.1 may include a few templates (e.g. Endo and Prostho) purely to
 - Next.js (App Router) + TypeScript (strict)
 - Tailwind CSS v4 (same setup as OraMedha: tokens in globals.css via @theme)
 - lucide-react icons, clsx + tailwind-merge (`cn()`), @radix-ui/react-slot
-- Supabase: Postgres, Auth (Google sign-in, open sign-up; OAuth with PKCE via `/auth/callback`), Storage (X-rays, photos, PDFs)
+- Supabase: Postgres, Auth (open sign-up with Google — OAuth with PKCE via `/auth/callback` — or email + password; email links land on `/auth/confirm`), Storage (X-rays, photos, PDFs)
 - Local testing never uses Google: `npm run dev:local` offers a local-only email test sign-in that refuses to exist against the hosted project (`lib/auth/test-sign-in.ts`).
 - Vitest for tests
 - Installable PWA (PGs open a link and "add to home screen")

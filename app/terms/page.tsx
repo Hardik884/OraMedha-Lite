@@ -35,7 +35,7 @@ export default function TermsPage() {
       <LegalSection title="Your account and your patients">
         <LegalList
           items={[
-            "Keep your Google account secure. You're responsible for what's done in the app with your account.",
+            "Keep your Google account or password secure, and don't share it. You're responsible for what's done in the app with your account.",
             "Record patient information only where you're allowed to, follow your college's and hospital's rules on consent and confidentiality, and keep the information accurate.",
             "Messages to patients are sent by you, from your own WhatsApp. You're responsible for what you send.",
             "Don't use the app for anything unlawful, to harass anyone, or to try to reach other people's data.",

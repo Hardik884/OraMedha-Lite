@@ -62,14 +62,19 @@ npm run db:stop
 
 ## Sign-in (Google)
 
-PGs sign in with **Continue with Google** (Supabase Auth, Google provider, PKCE). Sign-up is open: any Google account can sign in, and a first sign-in goes to onboarding (name pre-filled from Google, then college and specialty).
+PGs sign in with **Continue with Google** (Supabase Auth, Google provider, PKCE) or with **email and password**. Sign-up is open either way, and a first sign-in goes to onboarding (name pre-filled from Google, then college and specialty).
+
+- **Email + password:** sign in, create an account, **Forgot password?** (emails a link), and **Settings → Password** to set or change one (also how a Google user adds a password). Passwords: 8+ characters with letters and numbers.
+- **Email links** (confirm your email, reset your password) land on **`/auth/confirm`**, which works in any browser. For that, the Supabase email templates must use the token-hash links below; with Supabase's default links they still work, but only when opened in the same browser the request started in.
 
 - The login button sends the PG to Google and back to **`/auth/callback`**, which finishes the sign-in and continues to onboarding, the page they were trying to open, or Today.
 - Inside WhatsApp, Instagram, Facebook and other in-app browsers Google refuses to sign anyone in, so the login screen shows **Open in Chrome / Safari** with a **Copy link** button instead.
 - Google and Supabase are set up by hand in their dashboards, not from this repo (never run `supabase config push`; it would overwrite the dashboard settings):
   1. **Google Cloud Console:** a project, the OAuth consent screen (app name "OraMedha Lite", scopes `email`, `profile`, `openid` only, **published** "In production" so any Google account can sign in), and a **Web application** OAuth client whose *Authorized redirect URI* is `https://<project-ref>.supabase.co/auth/v1/callback`.
-  2. **Supabase → Authentication → Sign In / Providers:** Google on (client ID and secret from step 1); Phone and Email off.
-  3. **Supabase → Authentication → URL Configuration:** Site URL = the deployed address; Redirect URLs = `http://localhost:3000/**`, `http://<laptop-wifi-ip>:3000/**` and `https://<deployed-address>/**`.
+  2. **Supabase → Authentication → Sign In / Providers:** Google on (client ID and secret from step 1); Email on, with **Confirm email** on; Phone off.
+  3. **Supabase → Authentication → Emails → SMTP Settings:** a real email sender (Supabase's built-in one only delivers to the project's own team members, a few an hour).
+  4. **Supabase → Authentication → Emails → Templates:** in **Confirm signup**, the link is `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`; in **Reset password**, `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`.
+  5. **Supabase → Authentication → URL Configuration:** Site URL = the deployed address; Redirect URLs = `http://localhost:3000/**`, `http://<laptop-wifi-ip>:3000/**` and `https://<deployed-address>/**`.
 - Testing on a phone over Wi-Fi (`npm run dev:phone`) needs that Wi-Fi address in the Redirect URLs. If the laptop's address changes, add the new one.
 
 ## Procedure templates
@@ -84,7 +89,7 @@ All clinical knowledge (specialties, case types, stages, durations, gaps, next s
 | `app/dev/ui/` | Hidden component gallery |
 | `components/ui/` | Design-system components (from the OraMedha kit, sized for phones) |
 | `components/shared/` | Logo, theme toggle, avatars, status chips, segmented tabs |
-| `app/login`, `app/auth/callback`, `app/onboarding` | Google sign-in, its callback, and first-login onboarding |
+| `app/login`, `app/auth/*`, `app/forgot-password`, `app/set-password`, `app/onboarding` | Sign-in (Google, email + password), the Google callback and email links, passwords, first-login onboarding |
 | `lib/` | Business logic (pure functions + tests) and Supabase clients |
 | `supabase/` | CLI config, migrations (schema, RLS, templates) |
 | `test/db/` | Database specs run against the local stack (`npm run test:db`) |

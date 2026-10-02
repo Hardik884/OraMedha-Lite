@@ -220,9 +220,10 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# LOCAL STACK ONLY: the local test sign-in (npm run dev:local) and the database
-# tests create throwaway users with email + password. On the hosted project the
-# Email provider is switched OFF in the dashboard; PGs use Google.
+# PGs sign in with Google or email + password. LOCALLY, confirmation emails
+# are off (no mail server), so a new email account is signed in at once; the
+# local test sign-in and the database tests rely on that too. The hosted
+# project has Confirm email ON (set in the dashboard).
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.

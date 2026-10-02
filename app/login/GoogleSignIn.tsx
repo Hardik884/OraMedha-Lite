@@ -46,16 +46,13 @@ export function GoogleSignIn({ next, initialError }: { next: string; initialErro
   }
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="space-y-3">
       {error && (
-        <p
-          className="mb-6 rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-3 text-sm text-danger"
-          role="alert"
-        >
+        <p className="rounded-[10px] border border-danger-border bg-danger-bg px-3.5 py-3 text-sm text-danger" role="alert">
           {error}
         </p>
       )}
-      <div className="mt-auto space-y-3 pt-8">
+      <div className="space-y-2">
         <Button variant="outline" size="xl" block onClick={start} isLoading={busy}>
           {!busy && (
             // eslint-disable-next-line @next/next/no-img-element -- a fixed 20px brand mark

@@ -13,13 +13,24 @@ export default function PrivacyPage() {
         and who can see it. OraMedha Lite is an early test version made by the OraMedha team.
       </p>
 
-      <LegalSection title="Signing in with Google">
+      <LegalSection title="Signing in">
         <p>
-          You sign in with your Google account. From Google we receive only your <strong>name</strong> and{" "}
-          <strong>email address</strong>. We use your name to fill in your profile (you can change it) and your
-          email to identify your account. We never see your Google password and get no access to your Gmail,
-          contacts, Drive or anything else in your Google account.
+          You sign in with your Google account, or with your email and a password.
         </p>
+        <LegalList
+          items={[
+            <>
+              <strong>Google:</strong> we receive only your name and email address. We use your name to fill in your
+              profile (you can change it) and your email to identify your account. We never see your Google password
+              and get no access to your Gmail, contacts, Drive or anything else in your Google account.
+            </>,
+            <>
+              <strong>Email and password:</strong> we keep your email to identify your account and send you sign-in
+              emails (confirming your address, resetting your password). Your password is stored only in scrambled
+              (hashed) form by our sign-in provider; nobody, including us, can read it.
+            </>,
+          ]}
+        />
       </LegalSection>
 
       <LegalSection title="What the app keeps">
@@ -47,7 +58,8 @@ export default function PrivacyPage() {
       <LegalSection title="Where it is stored">
         <p>
           Data and files are stored with our database provider, Supabase, in its Mumbai (India) region. The app
-          is served by Vercel. Both act only on our instructions to run the app. Google handles your sign-in.
+          is served by Vercel. Both act only on our instructions to run the app. Google handles Google sign-in,
+          and sign-in emails are sent through an email delivery service.
         </p>
       </LegalSection>
 

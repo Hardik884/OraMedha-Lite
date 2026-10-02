@@ -6,6 +6,7 @@ import {
   Clock,
   Compass,
   FileText,
+  KeyRound,
   MessageSquareText,
   ShieldCheck,
   SlidersHorizontal,
@@ -121,6 +122,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
         <SettingsGroup title="Patient reminders">
           <ReminderPicker initial={prefs.reminderTiming} />
+        </SettingsGroup>
+
+        <SettingsGroup title="Account">
+          <ul className="divide-y divide-border">
+            <SettingsRow
+              href="/set-password?from=settings"
+              icon={KeyRound}
+              title="Password"
+              summary="Set or change the password for email sign-in"
+            />
+          </ul>
         </SettingsGroup>
 
         <SettingsGroup title="Appearance">
