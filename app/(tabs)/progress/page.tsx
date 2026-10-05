@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PeriodFilter } from "@/components/progress/PeriodFilter";
 import { ProgressBar } from "@/components/progress/ProgressBar";
 import { requirePg } from "@/lib/pg/require";
-import { getLogEntries, getProgressCases, getSpecialtiesAndCaseTypes, getTargets } from "@/lib/data/progress";
+import { getLogEntries, getProgressCases, getSpecialTargets, getSpecialtiesAndCaseTypes, getTargets } from "@/lib/data/progress";
 import {
   caseTypeProgress,
   isPeriodKind,
@@ -43,10 +43,11 @@ export default async function ProgressPage({
     today,
   );
 
-  const [{ specialties, caseTypes }, cases, targets] = await Promise.all([
+  const [{ specialties, caseTypes }, cases, targets, specialTargets] = await Promise.all([
     getSpecialtiesAndCaseTypes(),
     getProgressCases(),
     getTargets(),
+    getSpecialTargets(),
   ]);
 
   // The PG's own specialty first, then any other they have cases in.
@@ -65,6 +66,8 @@ export default async function ProgressPage({
   const maxCompleted = Math.max(0, ...rows.map((r) => r.completed));
   const stages = stageCounts(entries, period);
   const special = specialCounts(inSpecialty, period);
+  const specialTarget = specialTargets[specialty.id] ?? null;
+  const specialBar = specialTarget ? targetProgress(special.completed, specialTarget) : null;
   const activity = recentActivity(latest, RECENT);
   const nothingYet = inSpecialty.length === 0;
 
@@ -149,16 +152,39 @@ export default async function ProgressPage({
             <h2 id="special" className="text-sm font-semibold text-text-primary">
               Special cases
             </h2>
-            <Card className="flex items-center gap-3 p-4">
+            <Card className="flex items-center gap-3 p-4" data-special-progress>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent">
                 <Star className="h-5 w-5" aria-hidden />
               </span>
-              <p className="text-base text-text-body">
-                <span className="font-semibold text-text-primary">{special.completed}</span> completed ·{" "}
-                <span className="font-semibold text-text-primary">{special.ongoing}</span> ongoing
-              </p>
+              {specialBar ? (
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="text-base font-medium text-text-primary">Completed</span>
+                    <span className="shrink-0 text-sm tabular-nums text-text-body">{specialBar.text}</span>
+                  </span>
+                  <ProgressBar fraction={specialBar.fraction} reached={specialBar.reached} className="mt-2" />
+                  <span className="mt-1.5 block text-xs text-text-secondary">
+                    {special.ongoing === 1 ? "1 ongoing" : `${special.ongoing} ongoing`}
+                  </span>
+                </span>
+              ) : (
+                <p className="text-base text-text-body">
+                  <span className="font-semibold text-text-primary">{special.completed}</span> completed ·{" "}
+                  <span className="font-semibold text-text-primary">{special.ongoing}</span> ongoing
+                </p>
+              )}
             </Card>
-            <p className="text-xs text-text-secondary">Mark a case as special on its patient screen.</p>
+            <p className="text-xs text-text-secondary">
+              Mark a case as special on its patient screen.
+              {!specialTarget && (
+                <>
+                  {" "}
+                  <Link href="/settings/targets?from=progress" className="font-medium text-accent">
+                    Set a target
+                  </Link>
+                </>
+              )}
+            </p>
           </section>
 
           <section className="space-y-2" aria-labelledby="recent">

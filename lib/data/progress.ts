@@ -94,6 +94,14 @@ export async function getSpecialtiesAndCaseTypes(): Promise<{ specialties: Speci
   };
 }
 
+/** Special-case targets, keyed by specialty id. */
+export async function getSpecialTargets(): Promise<Record<string, number>> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.from("pg_special_case_target").select("specialty_id, target");
+  if (error) throw new Error(`Could not load targets: ${error.code}`);
+  return Object.fromEntries(data.map((t) => [t.specialty_id, t.target]));
+}
+
 export async function getTargets(): Promise<Record<string, number>> {
   const supabase = await createServerClient();
   const { data, error } = await supabase.from("pg_case_type_target").select("case_type_id, target");

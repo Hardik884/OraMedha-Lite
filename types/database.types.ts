@@ -886,6 +886,55 @@ export type Database = {
           },
         ]
       }
+      pg_special_case_target: {
+        Row: {
+          created_at: string
+          id: string
+          pg_id: string
+          specialty_id: string
+          target: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pg_id?: string
+          specialty_id: string
+          target: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pg_id?: string
+          specialty_id?: string
+          target?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pg_special_case_target_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pg_special_case_target_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "progress_case"
+            referencedColumns: ["specialty_id"]
+          },
+          {
+            foreignKeyName: "pg_special_case_target_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialty"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pg_stage_override: {
         Row: {
           created_at: string

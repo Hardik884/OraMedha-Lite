@@ -166,3 +166,21 @@ describe("pg_case_type_target", () => {
     expect((await a.client.from("pg_case_type_target").insert({ case_type_id: other.id, target: 0 })).error).not.toBeNull();
   });
 });
+
+describe("pg_special_case_target", () => {
+  it("each PG sets and sees only their own special-case target", async () => {
+    const spec = tpl.specialtyId;
+    expect((await a.client.from("pg_special_case_target").insert({ specialty_id: spec, target: 5 })).error).toBeNull();
+    expect((await b.client.from("pg_special_case_target").select("id")).data).toEqual([]);
+    const { data: mine } = await a.client.from("pg_special_case_target").select("id").single();
+    await b.client.from("pg_special_case_target").update({ target: 1 }).eq("id", mine!.id);
+    await b.client.from("pg_special_case_target").delete().eq("id", mine!.id);
+    expect((await a.client.from("pg_special_case_target").select("target").single()).data?.target).toBe(5);
+  });
+
+  it("refuses silly targets and a second target for the same specialty", async () => {
+    expect((await a.client.from("pg_special_case_target").insert({ specialty_id: tpl.specialtyId, target: 3 })).error).not.toBeNull();
+    expect((await b.client.from("pg_special_case_target").insert({ specialty_id: tpl.specialtyId, target: 0 })).error).not.toBeNull();
+    expect((await b.client.from("pg_special_case_target").insert({ specialty_id: tpl.specialtyId, target: 1001 })).error).not.toBeNull();
+  });
+});
