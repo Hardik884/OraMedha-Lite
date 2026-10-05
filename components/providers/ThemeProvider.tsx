@@ -94,7 +94,7 @@ function applyTheme(resolved: ResolvedTheme) {
 }
 
 /**
- * Lite: keeps the phone's status/address bar the same colour as the page.
+ * Resident: keeps the phone's status/address bar the same colour as the page.
  *
  * The layout renders `theme-color` per OS scheme, which is wrong as soon as
  * the PG picks Light or Dark explicitly (a white bar over a dark app). Both

@@ -19,7 +19,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   secondary: "bg-surface-muted text-text-primary",
   outline:   "border border-border text-text-secondary bg-transparent",
   accent:    "bg-accent-soft text-accent-hover border border-accent-soft-border",
-  // Lite: the stronger green, so "Completed" / "Confirmed" read at 4.5:1+ (plain success green is 3.2:1 on its tint).
+  // Resident: the stronger green, so "Completed" / "Confirmed" read at 4.5:1+ (plain success green is 3.2:1 on its tint).
   success:   "bg-success-bg text-success-strong border border-success-border",
   warning:   "bg-warning-bg text-warning border border-warning-border",
   danger:    "bg-danger-bg text-danger border border-danger-border",

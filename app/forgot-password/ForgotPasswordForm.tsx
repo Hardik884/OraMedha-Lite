@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { LOGIN_PATH } from "@/lib/auth/routes";
 import { sendResetLink, type EmailFormState } from "@/app/login/email-actions";
+import { APP_NAME } from "@/lib/brand/name";
 
 /**
  * Email → a reset link. The answer is the same whether or not the email has
@@ -41,7 +42,7 @@ export function ForgotPasswordForm() {
         <div className="flex gap-3 rounded-xl border border-success-border bg-success-bg p-4" role="status">
           <MailCheck className="mt-0.5 h-5 w-5 shrink-0 text-success-strong" aria-hidden />
           <p className="text-sm text-text-body">
-            If <span className="font-medium text-text-primary">{state.sentTo}</span> has an OraMedha Lite account, a
+            If <span className="font-medium text-text-primary">{state.sentTo}</span> has an {APP_NAME} account, a
             link is on its way. Open it on this phone. It can take a minute; check Spam too.
           </p>
         </div>

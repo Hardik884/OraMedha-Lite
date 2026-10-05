@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { THEME_COLORS } from "@/lib/theme/colors";
+import { APP_NAME, APP_SHORT_NAME } from "@/lib/brand/name";
 
 /**
  * PWA manifest — served at /manifest.webmanifest and linked automatically.
@@ -11,8 +12,8 @@ import { THEME_COLORS } from "@/lib/theme/colors";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "OraMedha Lite",
-    short_name: "OraMedha Lite",
+    name: APP_NAME,
+    short_name: APP_SHORT_NAME,
     description: "Patients, appointments, case progress and logbook for dental PGs.",
     start_url: "/today",
     scope: "/",

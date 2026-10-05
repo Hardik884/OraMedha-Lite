@@ -6,7 +6,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 }
 
 /**
- * Input — Lite sizing: 44px tall and 16px text. Anything under 16px makes iOS
+ * Input — Resident sizing: 44px tall and 16px text. Anything under 16px makes iOS
  * Safari zoom the whole page when the field is focused.
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalList, LegalPage, LegalSection } from "@/components/layout/LegalPage";
+import { APP_NAME } from "@/lib/brand/name";
 
 export const metadata: Metadata = { title: "Privacy policy" };
 
@@ -8,9 +9,9 @@ export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy policy" updated="3 October 2026">
       <p>
-        OraMedha Lite helps dental postgraduate students (&ldquo;PGs&rdquo;) keep track of their patients,
+        {APP_NAME} helps dental postgraduate students (&ldquo;PGs&rdquo;) keep track of their patients,
         appointments, case progress, files and logbook. This page explains what information the app keeps, why,
-        and who can see it. OraMedha Lite is an early test version made by the OraMedha team.
+        and who can see it. {APP_NAME} is an early test version made by the OraMedha team.
       </p>
 
       <LegalSection title="Signing in">

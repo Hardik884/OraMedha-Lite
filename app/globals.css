@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 /*
- * OraMedha Lite — design tokens.
+ * OraMedha - Resident — design tokens.
  *
  * Copied from the main OraMedha app (docs/oramedha-design/app/globals.css) so
- * Lite looks like part of the same family. Removed: dental-chart, heatmap,
- * KPI, Business Brain and print sections, which Lite does not use. Added at
+ * Resident looks like part of the same family. Removed: dental-chart, heatmap,
+ * KPI, Business Brain and print sections, which Resident does not use. Added at
  * the bottom: the mobile rules from docs/design-system.md (safe areas, 44px
  * touch floor, bottom-nav height).
  *
@@ -32,7 +32,7 @@
   --color-text-primary: #151918;
   --color-text-strong: #333B36;
   --color-text-body: #5B635E;
-  /* Lite: a touch darker than the main app (#737A76) so secondary text meets
+  /* Resident: a touch darker than the main app (#737A76) so secondary text meets
      WCAG AA (4.5:1) on every light surface, including in bright OPD light. */
   --color-text-secondary: #666D69;
   --color-text-disabled: #6E766F;
@@ -106,7 +106,7 @@
   --shadow-lg: 0 12px 28px -8px rgba(21, 25, 24, 0.12), 0 4px 10px -4px rgba(21, 25, 24, 0.06);
   --shadow-xl: 0 20px 44px -12px rgba(21, 25, 24, 0.16), 0 8px 16px -6px rgba(21, 25, 24, 0.08);
 
-  /* ── Lite: mobile layout sizes ─────────────────────────────────────────── */
+  /* ── Resident: mobile layout sizes ─────────────────────────────────────────── */
   /* Height of the bottom navigation bar, excluding the safe-area inset. */
   --spacing-nav: 4rem;
   /* Height of the top app bar. */
@@ -293,7 +293,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  /* Lite: no grey flash box on every tap in mobile Safari/Chrome. Pressed
+  /* Resident: no grey flash box on every tap in mobile Safari/Chrome. Pressed
      states come from the components' own active: styles instead. */
   -webkit-tap-highlight-color: transparent;
   /* Stop iOS from enlarging text on rotate. */
@@ -386,7 +386,7 @@ body {
   animation: fadeIn 0.2s ease forwards;
 }
 
-/* Lite: bottom sheets slide up from the thumb zone. */
+/* Resident: bottom sheets slide up from the thumb zone. */
 @keyframes sheetUp {
   from { transform: translateY(24px); opacity: 0; }
   to   { transform: translateY(0); opacity: 1; }
@@ -427,7 +427,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * LITE — MOBILE RULES (docs/design-system.md → "What changes for Lite")
+ * LITE — MOBILE RULES (docs/design-system.md → "What changes for Resident")
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 /* Safe areas. `viewport-fit=cover` (set in app/layout.tsx) lets the app draw

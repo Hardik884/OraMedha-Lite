@@ -17,7 +17,7 @@ import {
 import { createPortal } from "react-dom";
 
 /**
- * Select — OraMedha's dropdown (copied from the main app; Lite sizing: 44px trigger,
+ * Select — OraMedha's dropdown (copied from the main app; Resident sizing: 44px trigger,
  * 16px text, 44px option rows).
  *
  * WHY THIS IS NOT A NATIVE <select>

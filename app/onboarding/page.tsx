@@ -5,6 +5,7 @@ import { getCurrentPg } from "@/lib/pg/current";
 import { createServerClient } from "@/lib/supabase/server";
 import { LOGIN_PATH, safeNextPath } from "@/lib/auth/routes";
 import { OnboardingForm } from "./OnboardingForm";
+import { APP_NAME } from "@/lib/brand/name";
 
 export const metadata: Metadata = { title: "Welcome" };
 
@@ -24,7 +25,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
   if (error) throw new Error(`Could not load specialties: ${error.code}`);
 
   return (
-    <AuthShell title="Welcome to OraMedha Lite" subtitle="Three quick things, once.">
+    <AuthShell title={`Welcome to ${APP_NAME}`} subtitle="Three quick things, once.">
       <OnboardingForm specialties={specialties ?? []} suggestedName={current.suggestedName} next={next} />
     </AuthShell>
   );

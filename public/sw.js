@@ -1,5 +1,5 @@
 /*
- * OraMedha Lite — service worker.
+ * OraMedha - Resident — service worker.
  *
  * Deliberately minimal. It makes the app installable and replaces the
  * browser's dinosaur page with a friendly "you're offline" screen when a page

@@ -1,4 +1,4 @@
--- OraMedha Lite — local seed data.
+-- OraMedha - Resident — local seed data.
 --
 -- Runs after every `supabase db reset` (see [db.seed] in config.toml).
 -- Empty in Slice 0: there are no tables yet. Slice 1 adds the procedure

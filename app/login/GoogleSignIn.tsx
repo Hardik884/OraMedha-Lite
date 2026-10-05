@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useBrowserSupabaseClient } from "@/lib/supabase/client";
 import { friendlyAuthError } from "@/lib/auth/errors";
 import { authCallbackUrl } from "@/lib/auth/routes";
+import { APP_NAME } from "@/lib/brand/name";
 
 /**
  * "Continue with Google": Supabase Auth's Google sign-in with PKCE. The
@@ -61,7 +62,7 @@ export function GoogleSignIn({ next, initialError }: { next: string; initialErro
           {busy ? "Opening Google…" : "Continue with Google"}
         </Button>
         <p className="text-center text-xs text-text-secondary">
-          OraMedha Lite only gets your name and email from Google.
+          {APP_NAME} only gets your name and email from Google.
         </p>
       </div>
     </div>

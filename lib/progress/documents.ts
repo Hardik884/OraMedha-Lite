@@ -3,6 +3,7 @@ import { join } from "node:path";
 import ExcelJS from "exceljs";
 import PDFDocument from "pdfkit";
 import { LOGBOOK_COLUMNS, type LogbookRow } from "./export";
+import { APP_NAME } from "@/lib/brand/name";
 
 /**
  * The logbook as an Excel workbook or a PDF, built in memory (never written
@@ -26,7 +27,7 @@ function pdfFonts() {
 
 export async function logbookXlsx(header: string[], rows: LogbookRow[]): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
-  wb.creator = "OraMedha Lite";
+  wb.creator = APP_NAME;
   const ws = wb.addWorksheet("Logbook");
   header.forEach((line, i) => {
     const row = ws.addRow([line]);
@@ -50,7 +51,7 @@ export function logbookPdf(header: string[], rows: LogbookRow[]): Promise<Buffer
       layout: "landscape",
       margin: 36,
       bufferPages: true, // to number the pages once the total is known
-      info: { Title: "Logbook", Creator: "OraMedha Lite" },
+      info: { Title: "Logbook", Creator: APP_NAME },
     });
     const { regular, bold } = pdfFonts();
     doc.registerFont("Body", regular);

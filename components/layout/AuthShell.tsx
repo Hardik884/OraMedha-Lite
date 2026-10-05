@@ -1,7 +1,7 @@
 import { OraMedhaLogo } from "@/components/shared/OraMedhaLogo";
 
 /**
- * AuthShell — the frame for sign-in and onboarding: the OraMedha Lite lockup,
+ * AuthShell — the frame for sign-in and onboarding: the OraMedha - Resident lockup,
  * a title, and a single phone-width column that clears the notch and the
  * home indicator.
  */

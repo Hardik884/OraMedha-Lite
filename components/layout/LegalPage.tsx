@@ -1,3 +1,4 @@
+import { APP_NAME } from "@/lib/brand/name";
 import Link from "next/link";
 import { OraMedhaLogo } from "@/components/shared/OraMedhaLogo";
 
@@ -17,7 +18,7 @@ export function LegalPage({
   return (
     <main className="mx-auto min-h-dvh w-full max-w-2xl bg-background px-5 pt-safe pb-safe">
       <div className="pt-8 pb-6">
-        <Link href="/login" aria-label="OraMedha Lite — sign in" className="inline-flex">
+        <Link href="/login" aria-label={`${APP_NAME}, sign in`} className="inline-flex">
           <OraMedhaLogo size={24} withWordmark />
         </Link>
       </div>

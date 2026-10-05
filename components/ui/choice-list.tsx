@@ -23,7 +23,7 @@ interface ChoiceListProps {
 }
 
 /**
- * ChoiceList — Lite's "tap, don't type" control (design-system.md → Choice
+ * ChoiceList — Resident's "tap, don't type" control (design-system.md → Choice
  * lists). Full-width rows at least 48px tall; the selected row gets the
  * accent-soft fill, accent border and a check, so selection never relies on
  * colour alone.

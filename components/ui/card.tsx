@@ -15,7 +15,7 @@ export function Card({ className, ...props }: CardProps) {
   );
 }
 
-/* Lite pads cards at 16px rather than the main app's 20px: on a 360–390px
+/* Resident pads cards at 16px rather than the main app's 20px: on a 360–390px
    phone the extra 8px of width goes to content, not gutters. */
 
 export function CardHeader({ className, ...props }: CardProps) {

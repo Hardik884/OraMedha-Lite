@@ -3,6 +3,7 @@ import { WifiOff } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { OraMedhaLogo } from "@/components/shared/OraMedhaLogo";
 import { RetryButton } from "./RetryButton";
+import { APP_NAME } from "@/lib/brand/name";
 
 export const metadata: Metadata = { title: "Offline" };
 
@@ -17,7 +18,7 @@ export default function OfflinePage() {
       <EmptyState
         icon={<WifiOff />}
         title="You're offline"
-        description="OraMedha Lite needs a connection to load this page. Nothing you saved earlier is lost."
+        description={`${APP_NAME} needs a connection to load this page. Nothing you saved earlier is lost.`}
         action={<RetryButton />}
       />
     </main>

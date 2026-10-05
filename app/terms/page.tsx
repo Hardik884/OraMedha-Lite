@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalList, LegalPage, LegalSection } from "@/components/layout/LegalPage";
+import { APP_NAME } from "@/lib/brand/name";
 
 export const metadata: Metadata = { title: "Terms of service" };
 
@@ -9,7 +10,7 @@ export default function TermsPage() {
   return (
     <LegalPage title="Terms of service" updated="3 October 2026">
       <p>
-        These terms apply when you use OraMedha Lite, an app made by the OraMedha team for dental postgraduate
+        These terms apply when you use {APP_NAME}, an app made by the OraMedha team for dental postgraduate
         students. By signing in you agree to them. Please also read the{" "}
         <Link href="/privacy" className="font-medium text-accent underline-offset-4 hover:underline">
           privacy policy
@@ -19,7 +20,7 @@ export default function TermsPage() {
 
       <LegalSection title="An early test version">
         <p>
-          OraMedha Lite is free and still being tested. Features may change, and things may sometimes break or be
+          {APP_NAME} is free and still being tested. Features may change, and things may sometimes break or be
           unavailable. Please tell us through <strong>Settings → Send feedback</strong> when they do.
         </p>
       </LegalSection>

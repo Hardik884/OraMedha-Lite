@@ -263,7 +263,7 @@ otp_expiry = 3600
 [auth.sms]
 # LOCAL STACK ONLY — this file is never pushed to the hosted project (never
 # run `supabase config push`; the hosted project's auth settings live in the
-# Supabase dashboard). OraMedha Lite signs PGs in with Google; phone sign-in
+# Supabase dashboard). OraMedha - Resident signs PGs in with Google; phone sign-in
 # is off. Locally, the test sign-in uses email + password (see [auth.email]).
 enable_signup = false
 # If enabled, users need to confirm their phone number before signing in.

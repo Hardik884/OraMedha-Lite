@@ -1,4 +1,4 @@
-# OraMedha Lite
+# OraMedha - Resident
 
 A mobile-first app for dental postgraduate students (PGs): patients, appointments, case progress, files and logbook in one place. Sister product of OraMedha — same look, lighter app.
 
@@ -70,7 +70,7 @@ PGs sign in with **Continue with Google** (Supabase Auth, Google provider, PKCE)
 - The login button sends the PG to Google and back to **`/auth/callback`**, which finishes the sign-in and continues to onboarding, the page they were trying to open, or Today.
 - Inside WhatsApp, Instagram, Facebook and other in-app browsers Google refuses to sign anyone in, so the login screen shows **Open in Chrome / Safari** with a **Copy link** button instead.
 - Google and Supabase are set up by hand in their dashboards, not from this repo (never run `supabase config push`; it would overwrite the dashboard settings):
-  1. **Google Cloud Console:** a project, the OAuth consent screen (app name "OraMedha Lite", scopes `email`, `profile`, `openid` only, **published** "In production" so any Google account can sign in), and a **Web application** OAuth client whose *Authorized redirect URI* is `https://<project-ref>.supabase.co/auth/v1/callback`.
+  1. **Google Cloud Console:** a project, the OAuth consent screen (app name "OraMedha - Resident", scopes `email`, `profile`, `openid` only, **published** "In production" so any Google account can sign in), and a **Web application** OAuth client whose *Authorized redirect URI* is `https://<project-ref>.supabase.co/auth/v1/callback`.
   2. **Supabase → Authentication → Sign In / Providers:** Google on (client ID and secret from step 1); Email on, with **Confirm email** on; Phone off.
   3. **Supabase → Authentication → Emails → SMTP Settings:** a real email sender (Supabase's built-in one only delivers to the project's own team members, a few an hour).
   4. **Supabase → Authentication → Emails → Templates:** in **Confirm signup**, the link is `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`; in **Reset password**, `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`.

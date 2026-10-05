@@ -1,7 +1,9 @@
 import { MARK_ASPECT, MARK_SRC } from "@/lib/brand/mark";
+import { APP_NAME, WORDMARK_EDITION } from "@/lib/brand/name";
 
 /**
- * OraMedhaLogo — the OraMedha mark, with an optional "OraMedha Lite" wordmark.
+ * OraMedhaLogo — the OraMedha mark, with an optional "OraMedha Resident" wordmark
+ * (the app's name, APP_NAME, is what screen readers hear).
  * (DentGrowLogo in the main app.)
  *
  * `size` is the mark's HEIGHT; width follows from MARK_ASPECT (~2:1).
@@ -20,7 +22,7 @@ const LOCKUP_GAP_RATIO = 0.5;
 interface OraMedhaLogoProps {
   /** HEIGHT of the mark in px; width follows from MARK_ASPECT. Default: 28. */
   size?: number;
-  /** Render the "OraMedha Lite" wordmark beside the mark. Default: false. */
+  /** Render the "OraMedha Resident" wordmark beside the mark. Default: false. */
   withWordmark?: boolean;
   /** `themed` for a normal surface, `mono` for a painted brand surface. */
   variant?: "themed" | "mono";
@@ -47,7 +49,7 @@ export function OraMedhaLogo({
     >
       <span
         role="img"
-        aria-label={withWordmark ? undefined : "OraMedha Lite"}
+        aria-label={withWordmark ? undefined : APP_NAME}
         aria-hidden={withWordmark || undefined}
         style={{
           width: Math.round(size * MARK_ASPECT),
@@ -79,16 +81,18 @@ export function OraMedhaLogo({
             whiteSpace: "nowrap",
           }}
         >
-          OraMedha
-          {/* "Lite" is quieter than the parent brand, never a second colour. */}
+          <span className="sr-only">{APP_NAME}</span>
+          <span aria-hidden>OraMedha</span>
+          {/* "Resident" is quieter than the parent brand, never a second colour. */}
           <span
+            aria-hidden
             style={{
               fontWeight: 500,
               marginLeft: "0.28em",
               color: variant === "mono" ? "currentColor" : "var(--text-secondary)",
             }}
           >
-            Lite
+            {WORDMARK_EDITION}
           </span>
         </span>
       )}

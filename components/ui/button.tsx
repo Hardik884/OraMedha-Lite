@@ -7,7 +7,7 @@ import { forwardRef } from "react";
 export type ButtonVariant = "default" | "secondary" | "ghost" | "outline" | "danger" | "link";
 /**
  * `xs`–`lg` and `icon` are the main OraMedha app's sizes, kept so screens read
- * the same. `xl` and `icon-lg` are Lite's thumb sizes (design-system.md):
+ * the same. `xl` and `icon-lg` are Resident's thumb sizes (design-system.md):
  * `xl` is the full-height primary action (Update Visit, Next, Confirm &
  * Schedule) and `icon-lg` a 44px icon button.
  */
@@ -16,7 +16,7 @@ export type ButtonSize = "xs" | "sm" | "md" | "lg" | "xl" | "icon" | "icon-lg";
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
-  /** Stretch to the container's width — the norm for Lite's main actions. */
+  /** Stretch to the container's width — the norm for Resident's main actions. */
   block?: boolean;
   asChild?: boolean;
   isLoading?: boolean;
@@ -59,7 +59,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
-        // Lite: a plain button unless it says type="submit". The browser's
+        // Resident: a plain button unless it says type="submit". The browser's
         // default is "submit", so an Edit or Pick button inside a form would
         // otherwise save the form. Links (asChild) get no type at all.
         type={asChild ? undefined : (type ?? "button")}

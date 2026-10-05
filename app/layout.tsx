@@ -1,3 +1,4 @@
+import { APP_NAME, APP_SHORT_NAME } from "@/lib/brand/name";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -21,11 +22,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "OraMedha Lite",
-    template: "%s — OraMedha Lite",
+    default: APP_NAME,
+    template: `%s · ${APP_NAME}`,
   },
   description: "Patients, appointments, case progress and logbook for dental PGs.",
-  applicationName: "OraMedha Lite",
+  applicationName: APP_NAME,
   // SVG first: it carries a prefers-color-scheme rule, so the mark is dark on a
   // light tab strip and light on a dark one. PNGs are the fallback, and the
   // Apple touch icon must be raster.
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "OraMedha Lite",
+    title: APP_SHORT_NAME,
     statusBarStyle: "default",
   },
   formatDetection: {
@@ -94,7 +95,7 @@ export default function RootLayout({
         <ServiceWorkerRegister />
         {/*
           NO PRODUCT ANALYTICS, DELIBERATELY (same rule as the main app).
-          Every screen in Lite shows patient data, and paths will carry record
+          Every screen in the app shows patient data, and paths will carry record
           ids. Nothing third-party is mounted here.
         */}
       </body>

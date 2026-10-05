@@ -1,8 +1,9 @@
+import { APP_NAME } from "@/lib/brand/name";
 import Link from "next/link";
 import { OraMedhaLogo } from "@/components/shared/OraMedhaLogo";
 
 /**
- * AppBar — the slim top bar: the OraMedha Lite lockup on the left, room on the
+ * AppBar — the slim top bar: the OraMedha - Resident lockup on the left, room on the
  * right for the profile/settings entry (Slice 3). Clears the notch via the
  * safe-area inset.
  */
@@ -12,7 +13,7 @@ export function AppBar({ right }: { right?: React.ReactNode }) {
       <div className="mx-auto flex h-appbar max-w-lg items-center justify-between gap-3 px-4">
         <Link
           href="/today"
-          aria-label="OraMedha Lite — Today"
+          aria-label={`${APP_NAME}, Today`}
           className="-mx-1 flex h-11 items-center rounded-lg px-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           <OraMedhaLogo size={20} withWordmark />

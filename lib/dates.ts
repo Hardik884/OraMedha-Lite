@@ -1,5 +1,5 @@
 /**
- * Everything in OraMedha Lite is shown and entered in India time, whatever
+ * Everything in OraMedha - Resident is shown and entered in India time, whatever
  * timezone the server (Vercel runs in UTC) or the phone happens to be in.
  *
  * India has no daylight saving, so IST is always UTC+05:30 — which is what

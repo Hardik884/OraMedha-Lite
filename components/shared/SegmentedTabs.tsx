@@ -20,16 +20,16 @@ interface SegmentedTabsProps {
    * its label, so four labels such as the file filters fit on a small phone.
    */
   equalWidth?: boolean;
-  /** Stretch the control to full width with equal segments (default on Lite). */
+  /** Stretch the control to full width with equal segments (default on Resident). */
   fullWidth?: boolean;
   className?: string;
 }
 
 /**
- * SegmentedTabs — the [ A ] [ B ] pill toggle from the main app, used in Lite
+ * SegmentedTabs — the [ A ] [ B ] pill toggle from the main app, used in Resident
  * for Today / Pending, Ongoing / Completed and file filters.
  *
- * Lite sizing: full width by default with 40px segments in a 48px control,
+ * Resident sizing: full width by default with 40px segments in a 48px control,
  * and an optional count per tab ("Pending 3").
  */
 export function SegmentedTabs({

@@ -27,8 +27,8 @@ export function isThemePreference(value: unknown): value is ThemePreference {
 }
 
 /**
- * System is the default in Lite. The main app defaults to Light only to protect
- * existing users from a sudden change; Lite has no such users, and on a phone
+ * System is the default in Resident. The main app defaults to Light only to protect
+ * existing users from a sudden change; Resident has no such users, and on a phone
  * following the OS (which many PGs set to dark at night) is what people expect.
  */
 export const DEFAULT_THEME_PREFERENCE: ThemePreference = "system";

@@ -1,9 +1,9 @@
-# OraMedha Lite
+# OraMedha - Resident
 
 ## What this is
-OraMedha Lite is a mobile-first app for dental postgraduate students (PGs). It helps a PG manage their patients, appointments, case progress, files and logbook in one place.
+OraMedha - Resident is a mobile-first app for dental postgraduate students (PGs). It helps a PG manage their patients, appointments, case progress, files and logbook in one place.
 
-It is a sister product of **OraMedha**, our main dental practice management system (PMS) with advanced features. Lite is a separate, lighter app, but it must look and feel like part of the OraMedha family (see Design below). The product docs in /docs say "OraMedha PG" — that is the same product as OraMedha Lite.
+It is a sister product of **OraMedha**, our main dental practice management system (PMS) with advanced features. OraMedha - Resident (formerly "OraMedha Lite"; the repo and folder keep the old name) is a separate, lighter app, but it must look and feel like part of the OraMedha family (see Design below). The product docs in /docs say "OraMedha PG" — that is the same product as OraMedha - Resident.
 
 **Product standard (drives every decision):**
 > "I update what clinically happened. OraMedha handles everything around it."
@@ -62,7 +62,7 @@ Seed data for v0.1 may include a few templates (e.g. Endo and Prostho) purely to
 ## Design (important)
 - **The mockups in /docs/screens.jpeg are NOT the final design.** Use them only for layout, flow and what information each screen shows. Ignore their colours (bright blue), fonts, button and card styles.
 - The visual design must match our main product, **OraMedha**: same colour tokens (emerald accent, soft grey-green surfaces), Geist font, same components, light + dark mode.
-- Read /docs/design-system.md before building any UI. It explains the rules and the mobile adjustments for Lite.
+- Read /docs/design-system.md before building any UI. It explains the rules and the mobile adjustments for Resident.
 - /docs/oramedha-design/ is a reference kit copied from the main OraMedha app (globals.css tokens, UI components, theme provider, logo). Copy from it into the app and adapt for mobile; do not import from it or edit it.
 - Use token classes only (bg-surface, text-text-primary, bg-accent…). Never raw hex or Tailwind palette colours like bg-blue-600.
 
@@ -110,6 +110,6 @@ Seed data for v0.1 may include a few templates (e.g. Endo and Prostho) purely to
 - /docs/user-journey.md — end-to-end PG journey
 - /docs/concept-screens.md — screen-by-screen concept
 - /docs/screens.jpeg — mockups for layout and flow only (not the visual design)
-- /docs/design-system.md — how Lite should look (matches OraMedha)
+- /docs/design-system.md — how Resident should look (matches OraMedha)
 - /docs/build-prompts.md — the slice-by-slice build prompts
 - /docs/oramedha-design/ — reference kit from the main OraMedha app

@@ -8,7 +8,7 @@
  * with the emerald accent plus a label, so the selection is never communicated
  * by colour alone.
  *
- * Lite sizing: each segment is a 40px-tall tap target inside a 48px control.
+ * Resident sizing: each segment is a 40px-tall tap target inside a 48px control.
  * `compact` shows icons only, for an app bar.
  */
 

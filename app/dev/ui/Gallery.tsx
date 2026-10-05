@@ -125,7 +125,7 @@ export function Gallery() {
           </Card>
         </Section>
 
-        <Section title="Buttons — Lite sizes">
+        <Section title="Buttons — Resident sizes">
           <div className="space-y-3">
             <Button size="xl" block>
               Primary action (xl)
