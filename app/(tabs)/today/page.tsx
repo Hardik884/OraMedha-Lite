@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, CircleCheck, Plus } from "lucide-react";
+import { CalendarDays, ChevronRight, CircleCheck, ClipboardCheck, Plus } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BottomActions } from "@/components/layout/BottomActions";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import { reminderDue } from "@/lib/appointments/timing";
 import { toManaged } from "@/lib/appointments/managed";
 import { draftMessage, openedAt } from "@/lib/messages/draft";
 import { formatDayHeading, istToday } from "@/lib/dates";
-import { NEW_PATIENT_PATH } from "@/lib/navigation/paths";
+import { NEW_PATIENT_PATH, WRAP_UP_PATH } from "@/lib/navigation/paths";
+import { planWrapUp } from "@/lib/wrapup/plan";
 
 export const metadata: Metadata = { title: "Today" };
 
@@ -32,7 +33,8 @@ export const dynamic = "force-dynamic";
  * they've confirmed, and a "Needs attention" box. Pending: everything that
  * needs an action, one tap each.
  */
-export default async function TodayPage() {
+export default async function TodayPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   const pg = await requirePg();
   const now = new Date();
   const nowIso = now.toISOString();
@@ -62,6 +64,9 @@ export default async function TodayPage() {
     ];
   });
 
+  // Wrap up the day: offered once the first patient's time has come.
+  const wrap = planWrapUp(appointments, now);
+
   const rows = attention.items.map((item) =>
     attentionRow(item, {
       pg,
@@ -80,8 +85,27 @@ export default async function TodayPage() {
         todayCount={appointments.length}
         pendingCount={attention.counts.total}
         lines={attentionLines(attention.counts)}
+        initialTab={tab === "pending" ? "pending" : "today"}
         today={
           <>
+            {wrap.toUpdate > 0 && (
+              <Link
+                href={WRAP_UP_PATH}
+                data-wrapup-card
+                className="flex items-center gap-3 rounded-xl border border-accent/30 bg-accent-soft p-4 active:bg-accent-soft/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+                  <ClipboardCheck className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base font-semibold text-text-primary">Wrap up the day</span>
+                  <span className="block text-sm text-text-body">
+                    {wrap.toUpdate === 1 ? "1 patient" : `${wrap.toUpdate} patients`} to update · one list, once
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden />
+              </Link>
+            )}
             <RemindersCard rows={reminders} />
             {appointments.length > 0 ? (
               <Card className="overflow-hidden">

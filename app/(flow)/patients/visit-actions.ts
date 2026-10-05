@@ -6,7 +6,7 @@ import { isUuid } from "@/lib/ids";
 import { isIsoDate, istToday } from "@/lib/dates";
 import { canRecordVisitOn } from "@/lib/visits/backdate";
 import { validateNextStep, validateVisit, type NextStepFields, type VisitFields } from "@/lib/visits/validate";
-import { visitUpdatedPath } from "@/lib/navigation/paths";
+import { isVisitReturn, visitUpdatedPath, wrapUpPath, type VisitReturn } from "@/lib/navigation/paths";
 
 export type RecordVisitResult = {
   errors?: Partial<Record<"stages" | "otherWork" | "outcome" | "note" | "stage" | "date" | "time" | "durationMin", string>>;
@@ -34,6 +34,8 @@ export async function recordVisit(input: {
   visit: VisitFields;
   modifierId: string | null;
   next: NextStepFields;
+  /** Go back to Wrap up the day after saving, instead of "Visit updated". */
+  then?: VisitReturn;
 }): Promise<RecordVisitResult> {
   if (![input.patientId, input.caseId, input.visitId, input.appointmentId].every(isUuid)) {
     return { formError: SAVE_FAILED };
@@ -81,5 +83,6 @@ export async function recordVisit(input: {
     return { formError: SAVE_FAILED };
   }
 
+  if (isVisitReturn(input.then)) redirect(wrapUpPath({ saved: input.caseId }));
   redirect(visitUpdatedPath(input.patientId, input.caseId, { date: visitDate === today ? undefined : visitDate }));
 }

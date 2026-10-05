@@ -39,6 +39,7 @@ import type { TodayVisit } from "@/lib/data/visit";
 import type { CaseFile } from "@/lib/data/files";
 import { VisitFiles } from "@/components/files/VisitFiles";
 import { recordVisit, type RecordVisitResult } from "@/app/(flow)/patients/visit-actions";
+import type { VisitReturn } from "@/lib/navigation/paths";
 
 const OTHER = "__other__";
 const REVIEW_DURATIONS = [15, 30, 45, 60];
@@ -84,6 +85,7 @@ export function UpdateVisitFlow({
   upcomingAppointment,
   todayFiles,
   backHref,
+  then,
 }: {
   patientId: string;
   caseId: string;
@@ -105,6 +107,8 @@ export function UpdateVisitFlow({
   /** Files already filed under today's visit (when editing it). */
   todayFiles: CaseFile[];
   backHref: string;
+  /** Return to Wrap up the day after saving. */
+  then?: VisitReturn;
 }) {
   const isEdit = todayVisit?.outcome != null;
 
@@ -251,6 +255,7 @@ export function UpdateVisitFlow({
           visitId,
           appointmentId,
           visitDate,
+          then,
           visit: { stageIds, otherSelected, otherWork, outcome, note },
           modifierId: activeModifier || null,
           next:

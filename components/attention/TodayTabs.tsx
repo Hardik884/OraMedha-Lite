@@ -16,14 +16,16 @@ export function TodayTabs({
   today,
   pending,
   lines,
+  initialTab = "today",
 }: {
   todayCount: number;
   pendingCount: number;
   today: React.ReactNode;
   pending: React.ReactNode;
   lines: { category: AttentionCategory; text: string }[];
+  initialTab?: "today" | "pending";
 }) {
-  const [tab, setTab] = useState("today");
+  const [tab, setTab] = useState<string>(initialTab);
   const pendingRef = useRef<HTMLDivElement>(null);
 
   function openGroup(category: AttentionCategory) {

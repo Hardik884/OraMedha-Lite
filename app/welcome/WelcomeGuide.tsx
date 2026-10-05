@@ -21,8 +21,8 @@ const STEPS: Step[] = [
   },
   {
     icon: ClipboardPen,
-    title: "Update the visit",
-    body: "After each patient, tap Update. Tick what you did and choose Partial or Complete.",
+    title: "Update once, after clinic",
+    body: "After clinic, tap Wrap up the day: for each patient, Came or Didn't come. Tick what you did, choose Partial or Complete, confirm the next visit.",
     points: ["Add X-rays and photos to the visit", "The case timeline fills itself in", "Your logbook counts it automatically"],
   },
   {

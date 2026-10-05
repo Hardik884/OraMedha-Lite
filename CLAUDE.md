@@ -16,6 +16,8 @@ Patient added → appointment scheduled → patient informed → patient treated
 
 The PG mostly lives in three screens: **Today**, **Patient/Case**, **Update Visit**. Everything else should happen in the background.
 
+PGs rarely update anything between patients; they update once, after clinic. **Wrap up the day** (`/wrap-up`, offered on Today once the first patient's time has come) lists today's patients, each answered once: "Came" opens Update Visit (what was done + the next appointment, one pass) and returns to the list; "Didn't come" marks it missed. The WhatsApp messages for the new times are one tap each from the same list. Updating during the day still works the same way.
+
 ## Specialty-agnostic core (important)
 OraMedha is NOT endodontics-specific. The core app must work for any dental specialty (Endo, Prostho, Perio, Ortho, OMFS, Pedo, etc.).
 

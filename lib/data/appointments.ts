@@ -147,3 +147,20 @@ export async function getNeverUpdated(clock: StatusClock): Promise<AppointmentLi
   if (error) throw new Error(`Could not load appointments: ${error.code}`);
   return withMessages(data, clock);
 }
+
+/** Each case's next appointment still to come (for the "send the new time" messages). */
+export async function getNextForCases(caseIds: string[], clock: StatusClock): Promise<Map<string, AppointmentListItem>> {
+  const next = new Map<string, AppointmentListItem>();
+  if (caseIds.length === 0) return next;
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("appointment_overview")
+    .select("*")
+    .in("case_id", caseIds)
+    .in("status", [...LIVE_STATUSES])
+    .gt("starts_at", clock.now.toISOString())
+    .order("starts_at");
+  if (error) throw new Error(`Could not load appointments: ${error.code}`);
+  for (const a of await withMessages(data, clock)) if (a.caseId && !next.has(a.caseId)) next.set(a.caseId, a);
+  return next;
+}

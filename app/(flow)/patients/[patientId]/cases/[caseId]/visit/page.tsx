@@ -6,7 +6,7 @@ import { getSchedulingData } from "@/lib/data/scheduling";
 import { getCaseFiles } from "@/lib/data/files";
 import { requirePg } from "@/lib/pg/require";
 import { isUuid } from "@/lib/ids";
-import { patientPath } from "@/lib/navigation/paths";
+import { isVisitReturn, patientPath, wrapUpPath } from "@/lib/navigation/paths";
 import { formatWeekdayDate, isIsoDate, istToday } from "@/lib/dates";
 import { canRecordVisitOn } from "@/lib/visits/backdate";
 import { FlowHeader } from "@/components/layout/FlowHeader";
@@ -23,11 +23,12 @@ export default async function UpdateVisitPage({
   searchParams,
 }: {
   params: Promise<{ patientId: string; caseId: string }>;
-  searchParams: Promise<{ date?: string }>;
+  searchParams: Promise<{ date?: string; then?: string }>;
 }) {
   await requirePg();
   const { patientId, caseId } = await params;
-  const { date } = await searchParams;
+  const { date, then } = await searchParams;
+  const returnTo = isVisitReturn(then) ? then : undefined;
   if (!isUuid(patientId) || !isUuid(caseId)) notFound();
   const today = istToday();
   const visitDate = date && isIsoDate(date) ? date : today;
@@ -41,7 +42,7 @@ export default async function UpdateVisitPage({
   if (!ctx || ctx.kase.patientId !== patientId) notFound();
 
   const { kase } = ctx;
-  const backHref = patientPath(patientId, { caseId });
+  const backHref = returnTo === "wrap-up" ? wrapUpPath() : patientPath(patientId, { caseId });
 
   // An older visit can't be slotted in after a newer one.
   if (visitDate !== today && ctx.hasLaterVisit && !ctx.todayVisit) {
@@ -54,7 +55,7 @@ export default async function UpdateVisitPage({
             The visit of {formatWeekdayDate(visitDate, today)} can&apos;t be added before it. If the patient came that
             day, mark the appointment as attended.
           </p>
-          {ctx.todaysAppointment && <MarkAttendedButton appointmentId={ctx.todaysAppointment.id} doneHref="/today" />}
+          {ctx.todaysAppointment && <MarkAttendedButton appointmentId={ctx.todaysAppointment.id} doneHref={returnTo ? wrapUpPath() : "/today"} />}
         </main>
       </>
     );
@@ -78,6 +79,7 @@ export default async function UpdateVisitPage({
       upcomingAppointment={ctx.upcomingAppointment}
       todayFiles={ctx.todayVisit ? files.filter((f) => f.visitId === ctx.todayVisit!.id) : []}
       backHref={backHref}
+      then={returnTo}
     />
   );
 }
