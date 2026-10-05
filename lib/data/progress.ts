@@ -79,18 +79,27 @@ export async function getLogEntries(filter: {
 export type CaseTypeInfo = { id: string; name: string; sortOrder: number; specialtyId: string };
 export type SpecialtyInfo = { id: string; name: string };
 
-/** Specialties and their active case types (template data). */
+/**
+ * Specialties and their case types (template data): the active ones, plus any
+ * retired case type this PG still has cases in (e.g. a case type whose steps
+ * were revised), so those cases keep counting on Progress and in the logbook.
+ */
 export async function getSpecialtiesAndCaseTypes(): Promise<{ specialties: SpecialtyInfo[]; caseTypes: CaseTypeInfo[] }> {
   const supabase = await createServerClient();
-  const [sp, ct] = await Promise.all([
+  const [sp, ct, mine] = await Promise.all([
     supabase.from("specialty").select("id, name, sort_order").order("sort_order"),
-    supabase.from("case_type").select("id, name, sort_order, specialty_id").eq("is_active", true).order("sort_order"),
+    supabase.from("case_type").select("id, name, sort_order, specialty_id, is_active").order("sort_order"),
+    supabase.from("patient_case").select("case_type_id").is("deleted_at", null),
   ]);
   if (sp.error) throw new Error(`Could not load specialties: ${sp.error.code}`);
   if (ct.error) throw new Error(`Could not load case types: ${ct.error.code}`);
+  if (mine.error) throw new Error(`Could not load cases: ${mine.error.code}`);
+  const used = new Set(mine.data.map((c) => c.case_type_id));
   return {
     specialties: sp.data.map((s) => ({ id: s.id, name: s.name })),
-    caseTypes: ct.data.map((c) => ({ id: c.id, name: c.name, sortOrder: c.sort_order, specialtyId: c.specialty_id })),
+    caseTypes: ct.data
+      .filter((c) => c.is_active || used.has(c.id))
+      .map((c) => ({ id: c.id, name: c.name, sortOrder: c.sort_order, specialtyId: c.specialty_id })),
   };
 }
 

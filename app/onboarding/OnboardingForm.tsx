@@ -94,7 +94,7 @@ export function OnboardingForm({
           </p>
         )}
         <p className="text-xs text-text-secondary">
-          More specialties are coming soon.
+          You can change this later in Settings.
         </p>
       </div>
 
