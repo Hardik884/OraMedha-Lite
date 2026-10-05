@@ -10,6 +10,8 @@ import {
   patientPath,
   schedulePath,
   visitPath,
+  isVisitReturn,
+  wrapUpPath,
   visitUpdatedPath,
 } from "./paths";
 
@@ -62,6 +64,17 @@ describe("appointment paths", () => {
 
   it("reschedulePath", () => {
     expect(reschedulePath("p1", "a1")).toBe("/patients/p1/appointments/a1/reschedule");
+  });
+
+  it("visitPath can return to Wrap up the day", () => {
+    expect(visitPath("p1", "c1", { then: "wrap-up" })).toBe("/patients/p1/cases/c1/visit?then=wrap-up");
+    expect(visitPath("p1", "c1", { date: "2026-09-25", then: "wrap-up" })).toBe(
+      "/patients/p1/cases/c1/visit?date=2026-09-25&then=wrap-up",
+    );
+    expect(isVisitReturn("wrap-up")).toBe(true);
+    expect(isVisitReturn("https://evil.example")).toBe(false);
+    expect(wrapUpPath()).toBe("/wrap-up");
+    expect(wrapUpPath({ saved: "c1" })).toBe("/wrap-up?saved=c1");
   });
 
   it("visitPath and visitUpdatedPath take an earlier date", () => {

@@ -30,8 +30,31 @@ export function backHrefFor(from: string | null | undefined): string {
  * Update Visit (and editing today's visit) for one case. `date` records a
  * forgotten visit from an earlier day (up to 7 days back).
  */
-export function visitPath(patientId: string, caseId: string, opts: { date?: string } = {}): string {
-  return `/patients/${patientId}/cases/${caseId}/visit${opts.date ? `?date=${opts.date}` : ""}`;
+export function visitPath(
+  patientId: string,
+  caseId: string,
+  opts: { date?: string; then?: VisitReturn } = {},
+): string {
+  const params = new URLSearchParams();
+  if (opts.date) params.set("date", opts.date);
+  if (opts.then) params.set("then", opts.then);
+  const query = params.toString();
+  return `/patients/${patientId}/cases/${caseId}/visit${query ? `?${query}` : ""}`;
+}
+
+/**
+ * Where Update Visit goes after saving, instead of "Visit updated":
+ * "wrap-up" returns to Wrap up the day, ready for the next patient.
+ */
+export type VisitReturn = "wrap-up";
+export function isVisitReturn(value: unknown): value is VisitReturn {
+  return value === "wrap-up";
+}
+
+/** Wrap up the day: today's patients, each answered once ("came" / "didn't come"). */
+export const WRAP_UP_PATH = "/wrap-up";
+export function wrapUpPath(opts: { saved?: string } = {}): string {
+  return opts.saved ? `${WRAP_UP_PATH}?saved=${encodeURIComponent(opts.saved)}` : WRAP_UP_PATH;
 }
 
 /** "Visit updated" — what just happened. */
