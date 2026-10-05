@@ -9,6 +9,7 @@ import { SendMessageButton } from "@/components/messages/SendMessageButton";
 import type { AttentionRowData } from "@/lib/attention/rows";
 import { patientPath, reschedulePath, schedulePath, visitPath } from "@/lib/navigation/paths";
 import { setAppointmentStatus } from "@/app/(flow)/patients/appointment-actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /**
  * One item on the Pending tab, with its one-tap action:
@@ -32,7 +33,8 @@ export function AttentionRow({ row }: { row: AttentionRowData }) {
         if (!result.ok) return setError(result.error);
         if (to === "missed") setMarkedMissed(true);
         else router.refresh();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setError("Couldn't reach OraMedha. Check your internet and try again.");
       }
     });

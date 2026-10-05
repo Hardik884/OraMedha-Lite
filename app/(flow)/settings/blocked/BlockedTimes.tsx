@@ -18,6 +18,7 @@ import { describeBlockedTime } from "@/lib/settings/blocked";
 import { WEEKDAYS } from "@/lib/settings/working-hours";
 import type { BlockedTime } from "@/lib/data/settings";
 import { addBlockedTime, removeBlockedTime, type SettingsResult } from "../actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 type Errors = Partial<Record<"label" | "date" | "endDate" | "time" | "weekday", string>>;
 
@@ -74,7 +75,8 @@ export function BlockedTimes({ blocks, today }: { blocks: BlockedTime[]; today: 
       let result: SettingsResult<keyof Errors> | undefined;
       try {
         result = await addBlockedTime({ id, block });
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
       if (result?.ok) setOpen(false);

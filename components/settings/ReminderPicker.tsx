@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { ChoiceList } from "@/components/ui/choice-list";
 import { REMINDER_TIMINGS, type ReminderTiming } from "@/lib/settings/reminders";
 import { updateReminderTiming } from "@/app/(flow)/settings/actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /** Saves as soon as the PG taps a choice — no Save button to forget. */
 export function ReminderPicker({ initial }: { initial: ReminderTiming }) {
@@ -21,7 +22,8 @@ export function ReminderPicker({ initial }: { initial: ReminderTiming }) {
         const result = await updateReminderTiming(next);
         if (result.formError) throw new Error(result.formError);
         setStatus("saved");
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setValue(previous);
         setStatus("error");
       }

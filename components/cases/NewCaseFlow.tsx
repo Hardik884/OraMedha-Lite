@@ -19,6 +19,7 @@ import {
 } from "@/lib/patients/validate";
 import type { CaseTypeOption } from "@/lib/data/templates";
 import { addCaseToPatient, createPatientWithCase, type ActionResult } from "@/app/(flow)/patients/actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 type Mode = { kind: "new-patient" } | { kind: "existing-patient"; patientId: string; patientName: string };
 
@@ -98,7 +99,8 @@ export function NewCaseFlow({
         result = isNewPatient
           ? await createPatientWithCase({ patientId, caseId, stageId, fields })
           : await addCaseToPatient({ patientId, caseId, stageId, fields });
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         // Network dropped. The same ids are reused on the next tap.
         result = { formError: "Couldn't reach OraMedha. Check your internet and tap again." };
       }

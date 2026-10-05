@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { MAX_SESSIONS_PER_DAY, SLOT_STEPS, WEEKDAYS } from "@/lib/settings/working-hours";
 import type { Session, WorkingHours } from "@/lib/scheduling/defaults";
 import { updateClinicTimings, type SettingsResult } from "../actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /** What a newly switched-on day starts with (the PG edits it). */
 const NEW_DAY: Session[] = [{ start: "09:00", end: "13:00" }];
@@ -70,7 +71,8 @@ export function TimingsForm({ initial, initialSlotStep }: { initial: WorkingHour
       let result: SettingsResult | undefined;
       try {
         result = await updateClinicTimings({ workingHours: hours, slotStepMin: slotStep });
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
       if (result?.errors) setErrors(result.errors);

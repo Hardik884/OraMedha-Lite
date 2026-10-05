@@ -12,6 +12,7 @@ import { MAX_LABEL_LENGTH, labelSuggestions } from "@/lib/files/labels";
 import { LabelChips } from "./LabelChips";
 import type { CaseFile } from "@/lib/data/files";
 import { updateFile } from "@/app/(flow)/patients/file-actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /** Rename / relabel a file: its label and its type. */
 export function EditFileSheet({
@@ -39,7 +40,8 @@ export function EditFileSheet({
         const result = await updateFile({ fileId: file.id, label, kind });
         if (!result.ok) return setError(result.error);
         onSaved();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setError("Couldn't reach OraMedha. Check your internet and try again.");
       }
     });

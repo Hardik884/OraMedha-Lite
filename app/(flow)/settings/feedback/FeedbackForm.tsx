@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MAX_FEEDBACK_LENGTH } from "@/lib/feedback/screen";
 import { formatAppointmentWhen } from "@/lib/dates";
 import { sendFeedback } from "./actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /** The feedback box, and the PG's last few notes (their own only). */
 export function FeedbackForm({
@@ -36,7 +37,8 @@ export function FeedbackForm({
         setMessage("");
         setDone(true);
         router.refresh();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setError("Couldn't reach OraMedha. Check your internet and try again.");
       }
     });

@@ -16,6 +16,7 @@ import { formatAppointmentWhen } from "@/lib/dates";
 import { durationOptions, formatDuration } from "@/lib/scheduling/defaults";
 import { patientPath } from "@/lib/navigation/paths";
 import { scheduleAppointment, type ActionResult } from "@/app/(flow)/patients/actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 type Errors = NonNullable<ActionResult<"date" | "time" | "durationMin">["errors"]>;
 
@@ -82,7 +83,8 @@ export function ScheduleForm({
           durationMin,
           isNew,
         });
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
       if (result?.errors) setErrors(result.errors);

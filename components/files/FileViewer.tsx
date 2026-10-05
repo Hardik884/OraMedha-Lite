@@ -13,6 +13,7 @@ import { deleteFile } from "@/app/(flow)/patients/file-actions";
 import { EditFileSheet } from "./EditFileSheet";
 import { FileKindIcon } from "./FileTiles";
 import { ZoomableImage } from "./ZoomableImage";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 const iconButton =
   "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-scrim-foreground hover:bg-scrim-foreground/10 active:bg-scrim-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-scrim-foreground disabled:opacity-30";
@@ -77,7 +78,8 @@ export function FileViewer({
         setConfirming(false);
         onChanged();
         onClose();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setError("Couldn't reach OraMedha. Check your internet and try again.");
       }
     });

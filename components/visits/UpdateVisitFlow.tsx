@@ -40,6 +40,7 @@ import type { CaseFile } from "@/lib/data/files";
 import { VisitFiles } from "@/components/files/VisitFiles";
 import { recordVisit, type RecordVisitResult } from "@/app/(flow)/patients/visit-actions";
 import type { VisitReturn } from "@/lib/navigation/paths";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 const OTHER = "__other__";
 const REVIEW_DURATIONS = [15, 30, 45, 60];
@@ -270,7 +271,8 @@ export function UpdateVisitFlow({
                 }
               : { kind: "complete", review, date, time, durationMin },
         });
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
       if (result?.errors) {

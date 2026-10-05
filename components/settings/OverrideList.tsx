@@ -18,6 +18,7 @@ import {
 } from "@/lib/settings/overrides";
 import { formatDuration } from "@/lib/scheduling/defaults";
 import type { SettingsResult } from "@/app/(flow)/settings/actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /**
  * One editable item: a template stage or a modifier rule. The list
@@ -193,7 +194,8 @@ function OverrideEditor({ item, onClose, onSave, onReset }: { item: OverrideItem
       let result: SettingsResult<keyof OverrideInput> | undefined;
       try {
         result = await action();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
       if (result?.ok) onClose();

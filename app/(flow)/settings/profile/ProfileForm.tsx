@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile, type SettingsResult } from "../actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 type Values = { fullName: string; college: string; specialtyId: string };
 
@@ -36,7 +37,8 @@ export function ProfileForm({
       let result: SettingsResult<keyof Values> | undefined;
       try {
         result = await updateProfile(values);
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         result = { formError: "Couldn't reach OraMedha. Check your internet and try again." };
       }
       if (result?.errors) setErrors(result.errors);

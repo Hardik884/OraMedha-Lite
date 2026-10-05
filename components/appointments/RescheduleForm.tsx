@@ -14,6 +14,7 @@ import { newId } from "@/lib/ids";
 import { formatAppointmentWhen } from "@/lib/dates";
 import { durationOptions, formatDuration } from "@/lib/scheduling/defaults";
 import { rescheduleAppointment } from "@/app/(flow)/patients/appointment-actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /**
  * Reschedule: the slot finder suggests the first free slot (the appointment
@@ -79,7 +80,8 @@ export function RescheduleForm({
           durationMin,
         });
         if (result?.formError) setFormError(result.formError);
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setFormError("Couldn't reach OraMedha. Check your internet and try again.");
       }
     });

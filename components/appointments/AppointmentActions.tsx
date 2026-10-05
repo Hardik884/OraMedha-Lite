@@ -22,6 +22,7 @@ import { formatAppointmentWhen } from "@/lib/dates";
 import { reschedulePath } from "@/lib/navigation/paths";
 import { cn } from "@/lib/utils";
 import { setAppointmentStatus } from "@/app/(flow)/patients/appointment-actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 type Step = "menu" | "cancel" | "missed_done" | "cancelled_done";
 
@@ -92,7 +93,8 @@ export function AppointmentActions({
         router.refresh();
         if (next) setStep(next);
         else close();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setError("Couldn't reach OraMedha. Check your internet and try again.");
       }
     });

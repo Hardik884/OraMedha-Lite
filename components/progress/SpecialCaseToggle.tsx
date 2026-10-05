@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { setCaseSpecial } from "@/app/(flow)/progress/actions";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 /** "Special case" on the Patient / Case screen — counted separately on Progress. */
 export function SpecialCaseToggle({ caseId, initial }: { caseId: string; initial: boolean }) {
@@ -23,7 +24,8 @@ export function SpecialCaseToggle({ caseId, initial }: { caseId: string; initial
           setOn(!next);
           setError(r.error);
         } else router.refresh();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setOn(!next);
         setError("Couldn't reach OraMedha. Check your internet and try again.");
       }

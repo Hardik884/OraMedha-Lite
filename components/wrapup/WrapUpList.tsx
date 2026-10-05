@@ -12,6 +12,7 @@ import type { MessageDraft } from "@/lib/messages/draft";
 import type { WrapUpAction, WrapUpState } from "@/lib/wrapup/plan";
 import { formatAppointmentWhen, formatTime } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { isNavigationSignal } from "@/lib/navigation/signal";
 
 export type WrapUpRow = {
   id: string;
@@ -98,7 +99,8 @@ function Row({ row: r, today }: { row: WrapUpRow; today: string }) {
         if (!result.ok) return setError(result.error);
         setConfirmMissed(false);
         router.refresh();
-      } catch {
+      } catch (error) {
+        if (isNavigationSignal(error)) return;
         setError(FAILED);
       }
     });
