@@ -7,6 +7,8 @@ import {
   Compass,
   FileText,
   KeyRound,
+  BellRing,
+  Smartphone,
   MessageSquareText,
   ShieldCheck,
   SlidersHorizontal,
@@ -25,6 +27,7 @@ import { getTargets } from "@/lib/data/progress";
 import { settingsBackHref } from "@/lib/feedback/screen";
 import { summarizeWorkingHours } from "@/lib/settings/working-hours";
 import { isCurrentBlock } from "@/lib/settings/blocked";
+import { formatReminderTime } from "@/lib/push/reminder";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -120,6 +123,21 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </ul>
         </SettingsGroup>
 
+        <SettingsGroup title="Your reminder">
+          <ul className="divide-y divide-border">
+            <SettingsRow
+              href="/settings/reminder"
+              icon={BellRing}
+              title="Wrap-up reminder"
+              summary={
+                prefs.wrapUpReminderTime
+                  ? `Every evening at ${formatReminderTime(prefs.wrapUpReminderTime)}, if patients are left`
+                  : "Off · a nudge after clinic"
+              }
+            />
+          </ul>
+        </SettingsGroup>
+
         <SettingsGroup title="Patient reminders">
           <ReminderPicker initial={prefs.reminderTiming} />
         </SettingsGroup>
@@ -144,6 +162,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <SettingsGroup title="Help">
           <ul className="divide-y divide-border">
             <SettingsRow href="/welcome?replay=1" icon={Compass} title="How OraMedha works" summary="The three-screen tour" />
+            <SettingsRow
+              href="/settings/install"
+              icon={Smartphone}
+              title="Add to home screen"
+              summary="Open it like an app · Android and iPhone"
+            />
             <SettingsRow
               href={`/settings/feedback${from ? `?from=${encodeURIComponent(from)}` : ""}`}
               icon={MessageSquareText}

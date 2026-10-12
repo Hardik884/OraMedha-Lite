@@ -17,7 +17,10 @@ export const FORGOT_PASSWORD_PATH = "/forgot-password";
 export const SET_PASSWORD_PATH = "/set-password";
 
 /** Reachable without signing in. None of these show patient data. */
-const PUBLIC_PATHS = [LOGIN_PATH, FORGOT_PASSWORD_PATH, "/auth", "/privacy", "/terms", "/offline", "/dev/ui"];
+/** The push scheduler calls this without a session; the route checks its secret. */
+export const PUSH_SCHEDULER_PATH = "/api/push/wrap-up";
+
+const PUBLIC_PATHS = [LOGIN_PATH, FORGOT_PASSWORD_PATH, "/auth", "/privacy", "/terms", "/offline", "/dev/ui", PUSH_SCHEDULER_PATH];
 
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

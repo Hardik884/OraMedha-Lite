@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -809,6 +809,8 @@ export type Database = {
           slot_step_min: number
           updated_at: string
           working_hours: Json
+          wrap_up_reminded_on: string | null
+          wrap_up_reminder_time: string | null
         }
         Insert: {
           created_at?: string
@@ -818,6 +820,8 @@ export type Database = {
           slot_step_min?: number
           updated_at?: string
           working_hours?: Json
+          wrap_up_reminded_on?: string | null
+          wrap_up_reminder_time?: string | null
         }
         Update: {
           created_at?: string
@@ -827,6 +831,8 @@ export type Database = {
           slot_step_min?: number
           updated_at?: string
           working_hours?: Json
+          wrap_up_reminded_on?: string | null
+          wrap_up_reminder_time?: string | null
         }
         Relationships: [
           {
@@ -999,6 +1005,47 @@ export type Database = {
             columns: ["stage_id"]
             isOneToOne: false
             referencedRelation: "stage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscription: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_success_at: string | null
+          p256dh: string
+          pg_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_success_at?: string | null
+          p256dh: string
+          pg_id?: string
+          user_agent?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_success_at?: string | null
+          p256dh?: string
+          pg_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscription_pg_id_fkey"
+            columns: ["pg_id"]
+            isOneToOne: false
+            referencedRelation: "pg_profile"
             referencedColumns: ["id"]
           },
         ]
@@ -1572,6 +1619,15 @@ export type Database = {
         }
         Returns: string
       }
+      save_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_p256dh: string
+          p_user_agent?: string
+        }
+        Returns: undefined
+      }
       start_case: {
         Args: {
           p_case_id: string
@@ -1581,6 +1637,26 @@ export type Database = {
           p_tooth?: string
         }
         Returns: string
+      }
+      wrap_up_reminders_due: {
+        Args: { p_now?: string; p_secret: string }
+        Returns: {
+          auth: string
+          endpoint: string
+          p256dh: string
+          pg_id: string
+          to_update: number
+        }[]
+      }
+      wrap_up_reminders_sent: {
+        Args: {
+          p_gone_endpoints: string[]
+          p_now?: string
+          p_ok_endpoints: string[]
+          p_pg_ids: string[]
+          p_secret: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

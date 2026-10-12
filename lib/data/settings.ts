@@ -3,24 +3,28 @@ import { createServerClient } from "@/lib/supabase/server";
 import { parseWorkingHours, type WorkingHours } from "@/lib/scheduling/defaults";
 import { isReminderTiming, type ReminderTiming } from "@/lib/settings/reminders";
 import type { OverrideValues, TemplateValues } from "@/lib/settings/overrides";
+import { reminderTimeFromDb, type WrapUpReminderTime } from "@/lib/push/reminder";
 
 export type Preferences = {
   workingHours: WorkingHours;
   slotStepMin: number;
   reminderTiming: ReminderTiming;
+  /** Evening wrap-up reminder time ("19:00"), or null for off. */
+  wrapUpReminderTime: WrapUpReminderTime | null;
 };
 
 export async function getPreferences(): Promise<Preferences> {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("pg_preferences")
-    .select("working_hours, slot_step_min, reminder_timing")
+    .select("working_hours, slot_step_min, reminder_timing, wrap_up_reminder_time")
     .maybeSingle();
   if (error) throw new Error(`Could not load preferences: ${error.code}`);
   return {
     workingHours: parseWorkingHours(data?.working_hours ?? null),
     slotStepMin: data?.slot_step_min ?? 15,
     reminderTiming: isReminderTiming(data?.reminder_timing) ? data.reminder_timing : "evening_before",
+    wrapUpReminderTime: reminderTimeFromDb(data?.wrap_up_reminder_time),
   };
 }
 

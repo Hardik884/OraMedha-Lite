@@ -77,6 +77,27 @@ PGs sign in with **Continue with Google** (Supabase Auth, Google provider, PKCE)
   5. **Supabase → Authentication → URL Configuration:** Site URL = the deployed address; Redirect URLs = `http://localhost:3000/**`, `http://<laptop-wifi-ip>:3000/**` and `https://<deployed-address>/**`.
 - Testing on a phone over Wi-Fi (`npm run dev:phone`) needs that Wi-Fi address in the Redirect URLs. If the laptop's address changes, add the new one.
 
+## Push notifications (wrap-up reminder)
+
+A PG can get one notification in the evening (5–9 PM, their choice) on days when some of today's patients still need wrapping up: **Settings → Wrap-up reminder**. It shows a count, never patient names, and opens Wrap up the day. Each phone is turned on separately; iPhones need the app on the home screen first (**Settings → Add to home screen**).
+
+How it fits together:
+
+- The phone subscribes with the browser's push service; the subscription is saved in `push_subscription` (RLS: own rows; added only through `save_push_subscription()`).
+- On the **hosted** database, `pg_cron` calls `POST /api/push/wrap-up` every 15 minutes with `Authorization: Bearer <PUSH_CRON_SECRET>`. The route asks `wrap_up_reminders_due()` who is due, sends with `web-push`, then calls `wrap_up_reminders_sent()` (one reminder per PG per day; phones that are gone are forgotten). Both functions refuse without the secret stored in Supabase Vault as `push_cron_secret`.
+- Locally, `supabase/seed.sql` sets a throwaway secret and `npm run dev:local` uses it; nothing is scheduled locally.
+
+Environment (in `.env.local` and in Vercel → Settings → Environment Variables, Production + Preview):
+
+| Name | What |
+|---|---|
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | VAPID public key (safe in the browser) |
+| `VAPID_PRIVATE_KEY` | VAPID private key (secret) |
+| `VAPID_SUBJECT` | `mailto:` contact for the push services |
+| `PUSH_CRON_SECRET` | 64 hex characters; the same value is the Vault secret `push_cron_secret` |
+
+One-time hosted setup (already done for resident.oramedha.com): enable `pg_cron` and `pg_net`, create the Vault secret, and schedule the job `wrap-up-reminders` (`*/15 * * * *`) that POSTs to the route with the secret. Changing the secret means updating both Vercel and Vault. Check runs in Supabase → Integrations → Cron → `wrap-up-reminders`.
+
 ## Procedure templates
 
 All clinical knowledge (specialties, case types, stages, durations, gaps, next steps, modifiers) lives in database rows seeded by `supabase/migrations/*_seed_procedure_templates.sql`. Every seeded value has `is_placeholder = true` until confirmed with PGs. App code never names a stage.
@@ -94,4 +115,5 @@ All clinical knowledge (specialties, case types, stages, durations, gaps, next s
 | `supabase/` | CLI config, migrations (schema, RLS, templates) |
 | `test/db/` | Database specs run against the local stack (`npm run test:db`) |
 | `middleware.ts` | Session refresh + sign-in redirect |
+| `app/api/push/wrap-up`, `lib/push/` | Wrap-up reminder: scheduler route, sending, phone subscription |
 | `scripts/make-icons.mjs` | Regenerates PWA icons from the brand mark (`npm run icons`) |

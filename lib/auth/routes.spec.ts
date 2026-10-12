@@ -16,6 +16,7 @@ describe("isPublicPath", () => {
     expect(isPublicPath("/auth/confirm")).toBe(true);
     expect(isPublicPath("/privacy")).toBe(true);
     expect(isPublicPath("/terms")).toBe(true);
+    expect(isPublicPath("/api/push/wrap-up")).toBe(true);
     expect(isPublicPath("/offline")).toBe(true);
     expect(isPublicPath("/dev/ui")).toBe(true);
   });
@@ -24,6 +25,8 @@ describe("isPublicPath", () => {
     expect(isPublicPath("/today")).toBe(false);
     expect(isPublicPath("/onboarding")).toBe(false);
     expect(isPublicPath("/set-password")).toBe(false);
+    expect(isPublicPath("/api/files/abc")).toBe(false);
+    expect(isPublicPath("/api/push/other")).toBe(false);
     expect(isPublicPath("/loginx")).toBe(false);
     expect(isPublicPath("/authx")).toBe(false);
   });

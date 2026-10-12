@@ -31,6 +31,8 @@ const child = spawn("npx", ["next", "dev", "-p", port], {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: stack.anonKey,
     NEXT_PUBLIC_REQUIRE_LOCAL_SUPABASE: "1",
     NEXT_DIST_DIR: ".next-local",
+    // The local database's scheduler secret (supabase/seed.sql), not the hosted one.
+    PUSH_CRON_SECRET: "local-push-cron-secret-not-a-real-secret",
   },
 });
 child.on("exit", (code) => process.exit(code ?? 0));
