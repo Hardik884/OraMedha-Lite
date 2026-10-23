@@ -1,8 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { formatClock, summarizeWorkingHours, validateWorkingHours } from "./working-hours";
+import { formatClock, formatSlotStep, quickSlotSteps, summarizeWorkingHours, validateWorkingHours } from "./working-hours";
 
 const AM = { start: "09:00", end: "13:00" };
 const PM = { start: "14:00", end: "16:00" };
+
+describe("quickSlotSteps", () => {
+  it("offers 15 min, 30 min and 1 hour", () => {
+    expect(quickSlotSteps(15)).toEqual([15, 30, 60]);
+    expect(quickSlotSteps(60)).toEqual([15, 30, 60]);
+  });
+
+  it("keeps a finer step the PG set in Settings", () => {
+    expect(quickSlotSteps(10)).toEqual([10, 15, 30, 60]);
+  });
+
+  it("names the steps", () => {
+    expect(formatSlotStep(60)).toBe("1 hour");
+    expect(formatSlotStep(30)).toBe("30 min");
+  });
+});
 
 describe("formatClock", () => {
   it.each([

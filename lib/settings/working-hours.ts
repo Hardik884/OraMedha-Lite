@@ -17,6 +17,21 @@ export const WEEKDAYS = [
 ] as const;
 
 export const SLOT_STEPS = [5, 10, 15, 20, 30, 60] as const;
+
+/**
+ * The quick "Times every" choice when picking a slot: 15 min, 30 min or
+ * 1 hour (most treatments take longer than 15 min, so many PGs want only
+ * 9, 10, 11…). A finer step set in Settings stays in the list.
+ */
+export function quickSlotSteps(current: number): number[] {
+  const quick = [15, 30, 60];
+  return (quick.includes(current) ? quick : [...quick, current]).sort((a, b) => a - b);
+}
+
+/** "15 min", "30 min", "1 hour". */
+export function formatSlotStep(min: number): string {
+  return min === 60 ? "1 hour" : `${min} min`;
+}
 export const MAX_SESSIONS_PER_DAY = 3;
 
 /** "09:00" → "9:00 AM", "14:30" → "2:30 PM". */

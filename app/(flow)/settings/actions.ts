@@ -87,6 +87,17 @@ export async function updateClinicTimings(input: {
   redirect("/settings");
 }
 
+/** "Times every 15 min / 30 min / 1 hour", from the slot chooser. Saved without leaving the screen. */
+export async function updateSlotStep(step: number): Promise<SettingsResult> {
+  if (!(SLOT_STEPS as readonly number[]).includes(step)) return { formError: SAVE_FAILED };
+  const pgId = await signedInUserId();
+  const supabase = await createServerClient();
+  const { error } = await supabase.from("pg_preferences").update({ slot_step_min: step }).eq("pg_id", pgId);
+  if (error) return failed("slot step", error.code);
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
 // ── Blocked times ────────────────────────────────────────────────────────────
 export async function addBlockedTime(input: {
   id: string;

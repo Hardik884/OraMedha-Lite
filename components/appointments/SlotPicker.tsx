@@ -18,6 +18,9 @@ import {
   type SlotFinderInput,
 } from "@/lib/scheduling/slot-finder";
 import type { SchedulingData } from "@/lib/data/scheduling-query";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import { formatSlotStep, quickSlotSteps } from "@/lib/settings/working-hours";
+import { updateSlotStep } from "@/app/(flow)/settings/actions";
 
 export type SlotValue = { date: string; time: string };
 
@@ -39,16 +42,19 @@ export function useSlotChoice(args: {
   const { from, to } = args.window;
   // Keyed on plain values so a new array/object each render doesn't recompute.
   const excludeKey = (args.excludeAppointmentIds ?? []).join(",");
+  // "Times every …": starts from the PG's setting; changing it here saves it.
+  const [slotStepMin, setSlotStepMin] = useState(scheduling.slotStepMin);
 
   const input: SlotFinderInput = useMemo(
     () => ({
       ...scheduling,
+      slotStepMin,
       window: { from, to },
       durationMin,
       now: new Date(nowIso),
       excludeAppointmentIds: excludeKey ? excludeKey.split(",") : [],
     }),
-    [scheduling, from, to, durationMin, nowIso, excludeKey],
+    [scheduling, slotStepMin, from, to, durationMin, nowIso, excludeKey],
   );
   const result = useMemo(() => findSlots(input), [input]);
   const [manual, setManual] = useState<SlotValue | null>(args.initial ?? null);
@@ -65,6 +71,13 @@ export function useSlotChoice(args: {
     problems,
     pick: (v: SlotValue) => setManual(v),
     backToSuggestion: () => setManual(null),
+    slotStepMin,
+    /** Shows times every `step` minutes from now on (saved to the PG's settings). */
+    changeSlotStep: (step: number) => {
+      setSlotStepMin(step);
+      // The new times show at once; saving is best-effort (Settings has it too).
+      void updateSlotStep(step).catch(() => undefined);
+    },
   };
 }
 
@@ -113,7 +126,7 @@ export function SlotPicker({
           </div>
           <Button variant="outline" size="lg" className="shrink-0 px-3" onClick={() => setOpen(true)}>
             <Pencil className="h-4 w-4" aria-hidden />
-            Edit
+            Change
           </Button>
         </Card>
       ) : (
@@ -181,7 +194,12 @@ function Warnings({ problems }: { problems: string[] }) {
   );
 }
 
-/** "Choose a different slot": free times grouped by day, plus a manual picker. */
+/**
+ * "Choose a different slot":
+ *   1. Times every 15 min / 30 min / 1 hour (remembered)
+ *   2. Pick any date: that day's free times, or type a time
+ *   3. Free times on the suggested days
+ */
 function ChooseSlotSheet({
   choice,
   today,
@@ -194,8 +212,8 @@ function ChooseSlotSheet({
   onClose: () => void;
 }) {
   const { input, result, value } = choice;
-  const [date, setDate] = useState(value?.date ?? today);
-  const [time, setTime] = useState(value?.time ?? "");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
 
   // Days to list: the window, or (when it's full) the week after the first free slot.
   const afterFrom = result.kind === "after_window" ? result.first.date : null;
@@ -207,8 +225,13 @@ function ChooseSlotSheet({
       }),
     [input, afterFrom],
   );
+  const dateValid = isIsoDate(date) && date >= today;
+  const onDate = useMemo(
+    () => (dateValid ? (freeSlotsByDay(input, { maxPerDay: 48, range: { from: date, to: date } })[0]?.slots ?? []) : []),
+    [input, date, dateValid],
+  );
 
-  const manualValid = isIsoDate(date) && isTime(time);
+  const manualValid = dateValid && isTime(time);
   const manualProblems = manualValid ? checkSlot(input, date, time, durationMin).map((p) => describeProblem(p, today)) : [];
 
   function choose(v: SlotValue) {
@@ -217,64 +240,110 @@ function ChooseSlotSheet({
   }
 
   return (
-    <Dialog open onClose={onClose} title="Choose a different slot" description={`${formatDuration(durationMin)}, free times only`}>
+    <Dialog open onClose={onClose} title="Choose a different slot" description={`${formatDuration(durationMin)} · free times only`}>
       <div className="space-y-5 p-4">
-        {groups.length === 0 ? (
-          <p className="text-sm text-text-secondary">No free times in these days. Pick a time yourself below.</p>
-        ) : (
-          groups.map((g) => (
-            <section key={g.date} className="space-y-2">
-              <h3 className="text-sm font-semibold text-text-primary">{formatRelativeDay(g.date, today)}</h3>
-              <div className="flex flex-wrap gap-2">
-                {g.slots.map((s) => {
-                  const selected = value?.date === s.date && value.time === s.time;
-                  return (
-                    <button
-                      key={s.startsAt}
-                      type="button"
-                      onClick={() => choose({ date: s.date, time: s.time })}
-                      aria-pressed={selected}
-                      className={cn(
-                        "flex h-11 min-w-[5.5rem] items-center justify-center rounded-[10px] border px-3 text-sm tabular-nums cursor-pointer",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
-                        selected
-                          ? "border-accent-soft-border bg-accent-soft font-semibold text-accent-hover"
-                          : "border-border bg-surface font-medium text-text-primary active:bg-surface-muted",
-                      )}
-                    >
-                      {formatTime(s.startsAt)}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          ))
-        )}
+        <section className="space-y-2" data-slot-step>
+          <h3 className="text-sm font-semibold text-text-primary">Show times every</h3>
+          <SegmentedTabs
+            tabs={quickSlotSteps(choice.slotStepMin).map((s) => ({ key: String(s), label: formatSlotStep(s) }))}
+            value={String(choice.slotStepMin)}
+            onChange={(k) => choice.changeSlotStep(Number(k))}
+          />
+        </section>
 
-        <section className="space-y-3 border-t border-border pt-4">
-          <h3 className="text-sm font-semibold text-text-primary">Pick a time yourself</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Date" htmlFor="slot-date">
-              <Input id="slot-date" type="date" min={today} value={date} onChange={(e) => setDate(e.target.value)} />
-            </Field>
-            <Field label="Time" htmlFor="slot-time">
-              <Input id="slot-time" type="time" step={300} value={time} onChange={(e) => setTime(e.target.value)} />
-            </Field>
-          </div>
-          {manualValid &&
-            (manualProblems.length === 0 ? (
-              <p className="flex items-start gap-2 text-sm text-success">
-                <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-                Free — within your timings, no clash.
-              </p>
-            ) : (
-              <Warnings problems={manualProblems} />
-            ))}
-          <Button variant="outline" size="xl" block disabled={!manualValid} onClick={() => choose({ date, time })}>
-            Use this time
-          </Button>
+        <section className="space-y-3 rounded-xl border border-border bg-surface-secondary p-3" data-pick-date>
+          <h3 className="text-sm font-semibold text-text-primary">Pick a date</h3>
+          <Input
+            id="slot-date"
+            type="date"
+            min={today}
+            value={date}
+            aria-label="Date"
+            onChange={(e) => {
+              setDate(e.target.value);
+              setTime("");
+            }}
+          />
+          {dateValid && (
+            <>
+              {onDate.length === 0 ? (
+                <p className="text-sm text-text-secondary">
+                  No free time on {formatRelativeDay(date, today)} within your clinic timings. Type a time below to book
+                  it anyway.
+                </p>
+              ) : (
+                <SlotButtons slots={onDate} value={value} onChoose={choose} />
+              )}
+              <div className="flex items-end gap-2">
+                <Field label="Or type a time" htmlFor="slot-time" className="flex-1">
+                  <Input id="slot-time" type="time" step={300} value={time} onChange={(e) => setTime(e.target.value)} />
+                </Field>
+                <Button variant="outline" size="lg" disabled={!manualValid} onClick={() => choose({ date, time })}>
+                  Use
+                </Button>
+              </div>
+              {manualValid &&
+                (manualProblems.length === 0 ? (
+                  <p className="flex items-start gap-2 text-sm text-success">
+                    <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                    Free — within your timings, no clash.
+                  </p>
+                ) : (
+                  <Warnings problems={manualProblems} />
+                ))}
+            </>
+          )}
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-sm font-semibold text-text-primary">Suggested days</h3>
+          {groups.length === 0 ? (
+            <p className="text-sm text-text-secondary">No free times in these days. Pick a date above.</p>
+          ) : (
+            groups.map((g) => (
+              <div key={g.date} className="space-y-2">
+                <h4 className="text-sm font-medium text-text-body">{formatRelativeDay(g.date, today)}</h4>
+                <SlotButtons slots={g.slots} value={value} onChoose={choose} />
+              </div>
+            ))
+          )}
         </section>
       </div>
     </Dialog>
+  );
+}
+
+function SlotButtons({
+  slots,
+  value,
+  onChoose,
+}: {
+  slots: { date: string; time: string; startsAt: string }[];
+  value: SlotValue | null;
+  onChoose: (v: SlotValue) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {slots.map((s) => {
+        const selected = value?.date === s.date && value.time === s.time;
+        return (
+          <button
+            key={s.startsAt}
+            type="button"
+            onClick={() => onChoose({ date: s.date, time: s.time })}
+            aria-pressed={selected}
+            className={cn(
+              "flex h-11 min-w-[5.5rem] items-center justify-center rounded-[10px] border px-3 text-sm tabular-nums cursor-pointer",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
+              selected
+                ? "border-accent-soft-border bg-accent-soft font-semibold text-accent-hover"
+                : "border-border bg-surface font-medium text-text-primary active:bg-surface-muted",
+            )}
+          >
+            {formatTime(s.startsAt)}
+          </button>
+        );
+      })}
+    </div>
   );
 }
