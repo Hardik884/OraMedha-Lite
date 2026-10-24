@@ -58,7 +58,7 @@ export async function loadSchedulingData(
 
   return {
     workingHours: parseWorkingHours(prefs.data?.working_hours ?? null),
-    slotStepMin: prefs.data?.slot_step_min ?? 15,
+    slotStepMin: prefs.data?.slot_step_min ?? 60,
     blocked,
     appointments: appts.data!.flatMap((a) =>
       a.appointment_id && a.starts_at && a.duration_min

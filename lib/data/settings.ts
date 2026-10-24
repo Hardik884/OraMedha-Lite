@@ -22,7 +22,7 @@ export async function getPreferences(): Promise<Preferences> {
   if (error) throw new Error(`Could not load preferences: ${error.code}`);
   return {
     workingHours: parseWorkingHours(data?.working_hours ?? null),
-    slotStepMin: data?.slot_step_min ?? 15,
+    slotStepMin: data?.slot_step_min ?? 60,
     reminderTiming: isReminderTiming(data?.reminder_timing) ? data.reminder_timing : "evening_before",
     wrapUpReminderTime: reminderTimeFromDb(data?.wrap_up_reminder_time),
   };
